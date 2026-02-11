@@ -3,12 +3,12 @@ import { Search, Plus } from 'lucide-react';
 
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden bg-[#FAFAFA] py-12 lg:py-24">
+    <section className="relative overflow-hidden bg-[#FAFAFA]">
       <div className="container mx-auto px-4 md:px-8 flex flex-col lg:flex-row items-center gap-6 lg:gap-20">
         
         {/* Left Side: Content */}
         <div className="lg:w-1/2 z-10 text-center lg:text-left">
-          <h1 className="text-3xl md:text-4xl lg:text-6xl font-extrabold text-[#0F172A] leading-tight mb-6 lg:mb-12">
+          <h1 className="text-2xl md:text-3xl lg:text-5xl font-extrabold text-[#0F172A] leading-tight mb-6 lg:mb-12">
             Har qanday <br className="hidden lg:block"/>
             yo'qolgan <span className="text-[#1E85FF]">narsangizni</span> <br className="hidden lg:block"/>
             topishingiz mumkin!
