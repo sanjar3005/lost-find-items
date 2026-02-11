@@ -1,9 +1,10 @@
 import React from 'react';
-import { UserPlus, BellPlus, AlertCircle } from 'lucide-react';
+// Changed BellPlus to Bell (valid Lucide icon)
+import { UserPlus, Bell, AlertCircle } from 'lucide-react';
 
 const InfoCard = ({ icon: Icon, title, description }) => (
-  <div className=" bg-[#1E85FF] rounded-2xl p-5 flex flex-col gap-4 transition-all hover:bg-[#888c93]">
-    {/* Icon Container - Smaller size */}
+  /* Fixed background color to match the grey in your images */
+  <div className="bg-[#7c8087] rounded-2xl p-6 flex flex-col gap-4 transition-all hover:bg-[#888c93]">
     <div className="bg-[#1e88e5] w-12 h-12 rounded-lg flex items-center justify-center shadow-md">
       <Icon size={24} color="white" />
     </div>
@@ -27,7 +28,7 @@ const HowItWorks = () => {
       description: "Royxatdan o’tish tugmasi bosiladi va shaxsiy malumotlar to’ldiriladi.",
     },
     {
-      icon: BellPlus,
+      icon: Bell, // Fixed from BellPlus
       title: "Elon berish",
       description: "Biror bir narsangizni yo’qotgan bo’lsangiz Elon berish tugmasi bosiladi.",
     },
@@ -39,11 +40,13 @@ const HowItWorks = () => {
   ];
 
   return (
-    <div className="container w-full mx-auto p-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {data.map((item, index) => (
-          <InfoCard key={index} {...item} />
-        ))}
+    <div className="w-full bg-white py-10">
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {data.map((item, index) => (
+            <InfoCard key={index} {...item} />
+          ))}
+        </div>
       </div>
     </div>
   );
