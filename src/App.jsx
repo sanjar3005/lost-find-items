@@ -5,6 +5,7 @@ import './App.css'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import HomeCart from './components/HomeCart'
+import HowItWorks from './components/HowItWorks'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -20,6 +21,7 @@ function App() {
         authorImage={"Book"}
         image={"Book"}
       />
+      <HowItWorks />
     </>
   )
 }
