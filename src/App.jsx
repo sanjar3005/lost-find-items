@@ -4,6 +4,7 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
+import HomeCart from './components/HomeCart'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -12,6 +13,13 @@ function App() {
     <>
       <Navbar />
       <Hero />
+      <HomeCart 
+        date={"02-02-2007"}
+        title={"Book"}
+        author={"Bekzod"}
+        authorImage={"Book"}
+        image={"Book"}
+      />
     </>
   )
 }
