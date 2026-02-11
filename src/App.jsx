@@ -7,6 +7,9 @@ import Hero from './components/Hero'
 import HomeCart from './components/HomeCart'
 import HowItWorks from './components/HowItWorks'
 import ItemDetail from './components/ItemDetail'
+import CategoryList from './components/CategoryList'
+import FoundedPerson from './components/FoundedPerson'
+
 
 function App() {
 

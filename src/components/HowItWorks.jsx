@@ -1,5 +1,6 @@
 import React from 'react';
-import { UserPlus, BellPlus, AlertCircle } from 'lucide-react';
+// Changed BellPlus to Bell (valid Lucide icon)
+import { UserPlus, Bell, AlertCircle } from 'lucide-react';
 
 const InfoCard = ({ icon: Icon, title, description }) => (
   <div className=" bg-[#E6EFFA]/50 rounded-2xl p-5 flex flex-col gap-4 transition-all hover:bg-[#888c93]">
@@ -27,7 +28,7 @@ const HowItWorks = () => {
       description: "Royxatdan o’tish tugmasi bosiladi va shaxsiy malumotlar to’ldiriladi.",
     },
     {
-      icon: BellPlus,
+      icon: Bell, // Fixed from BellPlus
       title: "Elon berish",
       description: "Biror bir narsangizni yo’qotgan bo’lsangiz Elon berish tugmasi bosiladi.",
     },
