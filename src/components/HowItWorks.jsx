@@ -2,7 +2,7 @@ import React from 'react';
 import { UserPlus, BellPlus, AlertCircle } from 'lucide-react';
 
 const InfoCard = ({ icon: Icon, title, description }) => (
-  <div className=" bg-[#1E85FF] rounded-2xl p-5 flex flex-col gap-4 transition-all hover:bg-[#888c93]">
+  <div className=" bg-[#E6EFFA]/50 rounded-2xl p-5 flex flex-col gap-4 transition-all hover:bg-[#888c93]">
     {/* Icon Container - Smaller size */}
     <div className="bg-[#1e88e5] w-12 h-12 rounded-lg flex items-center justify-center shadow-md">
       <Icon size={24} color="white" />
@@ -12,7 +12,7 @@ const InfoCard = ({ icon: Icon, title, description }) => (
       <h3 className="text-[#0a1d37] text-xl font-bold">
         {title}
       </h3>
-      <p className="text-[#d1d5db] text-sm leading-snug">
+      <p className="text-[#838383] text-sm leading-snug">
         {description}
       </p>
     </div>
@@ -39,7 +39,7 @@ const HowItWorks = () => {
   ];
 
   return (
-    <div className="container w-full mx-auto p-4">
+    <div className="max-w-340 w-full mx-auto p-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {data.map((item, index) => (
           <InfoCard key={index} {...item} />

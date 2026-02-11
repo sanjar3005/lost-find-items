@@ -6,22 +6,30 @@ import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import HomeCart from './components/HomeCart'
 import HowItWorks from './components/HowItWorks'
+import ItemDetail from './components/ItemDetail'
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <>
       <Navbar />
       <Hero />
-      <HomeCart 
+      <HowItWorks />
+      <HomeCart
         date={"02-02-2007"}
         title={"Book"}
         author={"Bekzod"}
         authorImage={"Book"}
         image={"Book"}
       />
-      <HowItWorks />
+      <HomeCart
+        date={"02-02-2007"}
+        title={"Book"}
+        author={"Bekzod"}
+        authorImage={"Book"}
+        image={"Book"}
+      />
+      <ItemDetail />
     </>
   )
 }

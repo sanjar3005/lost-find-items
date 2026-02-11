@@ -7,7 +7,7 @@ export default function Navbar() {
   return (
     <nav className="w-full bg-white border-b border-slate-100 sticky top-0 z-50">
       {/* Main Container */}
-      <div className="container mx-auto px-4 md:px-8 h-20 flex items-center justify-between font-sans">
+      <div className="max-w-340 mx-auto px-4 md:px-8 h-20 flex items-center justify-between font-sans">
         
         {/* Left Side: Logo */}
         <div className="flex items-center gap-3 cursor-pointer shrink-0">
