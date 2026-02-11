@@ -13,7 +13,7 @@ const CategoryList = () => {
 
   return (
     /* This wrapper must be identical to HowItWorks */
-    <div className="container mx-auto px-4 py-8"> 
+    <div className="max-w-7xl mx-auto py-8"> 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         {categories.map((cat, index) => (
           <div 

@@ -67,7 +67,7 @@ export default function ItemDetail() {
 
   return (
     <div className="bg-white min-h-screen pb-20 pt-10">
-      <div className="container mx-auto px-4 md:px-8 max-w-[1360px]">
+      <div className="max-w-7xl mx-auto ">
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
           
@@ -122,12 +122,12 @@ export default function ItemDetail() {
 
           {/* --- RIGHT COLUMN: Details --- */}
           <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-[#0F172A] mb-4 font-sans">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-[#0F172A] mb-2.5 font-sans">
               {item.title}
             </h1>
 
             {/* Stats */}
-            <div className="flex flex-wrap gap-3 mb-6">
+            <div className="flex flex-wrap gap-3 mb-3">
               <div className="flex items-center gap-2 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-sm font-semibold">
                 <Clock size={16} /> {item.stats.time}
               </div>
@@ -140,17 +140,17 @@ export default function ItemDetail() {
             </div>
 
             {/* Description */}
-            <div className="mb-8">
-              <h3 className="text-sm font-bold text-[#0F172A] mb-2 uppercase tracking-wide">Izoh</h3>
+            <div className="mb-4">
+              <h3 className="text-sm font-bold text-[#0F172A] mb-1 uppercase tracking-wide">Izoh</h3>
               <p className="text-slate-500 leading-relaxed text-base">
                 {item.description}
               </p>
             </div>
 
             {/* Profile Card */}
-            <div className="bg-[#F8FAFC] rounded-2xl p-6 mb-8 border border-slate-100">
-              <h3 className="text-sm font-bold text-[#0F172A] mb-4">Topib olgan shaxsning pro'fili</h3>
-              <div className="flex items-center gap-4 mb-6">
+            <div className="bg-[#F8FAFC] rounded-2xl p-4 mb-3 border border-slate-100">
+              <h3 className="text-sm font-bold text-[#0F172A] mb-2">Topib olgan shaxsning pro'fili</h3>
+              <div className="flex items-center gap-4 mb-4">
                 <img 
                   src={item.owner.avatar} 
                   alt={item.owner.name} 
@@ -162,10 +162,10 @@ export default function ItemDetail() {
                 </div>
               </div>
               <div className="flex gap-4">
-                <button className="flex-1 bg-white border border-slate-200 hover:border-blue-500 hover:text-blue-600 text-slate-700 py-3 rounded-xl font-semibold transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2">
+                <button className="flex-1 bg-white border border-slate-200 hover:border-blue-500 hover:text-blue-600 text-slate-700 py-2 rounded-xl font-semibold transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2">
                   <Phone size={18} /> Qo'ng'iroq
                 </button>
-                <button className="flex-1 bg-white border border-slate-200 hover:border-blue-500 hover:text-blue-600 text-slate-700 py-3 rounded-xl font-semibold transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2">
+                <button className="flex-1 bg-white border border-slate-200 hover:border-blue-500 hover:text-blue-600 text-slate-700 py-2 rounded-xl font-semibold transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2">
                   <MessageCircle size={18} /> Xabar
                 </button>
               </div>
