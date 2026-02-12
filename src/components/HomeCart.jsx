@@ -3,7 +3,7 @@ import { Calendar, MoreHorizontal, ChevronRight } from 'lucide-react';
 
 const HomeCart = ({ date, title, author, authorImage, image }) => {
   return (
-    <div className="border border-[#D0D0D2] w-full lg:max-w-[280px] bg-grey rounded-[14px] lg:rounded-[16px] p-3 lg:p-5 lg:pt-7 flex flex-col gap-2 lg:gap-4 shadow-2xl ">
+    <div className="border border-[#D0D0D2] w-full max-w-2xs bg-grey rounded-[14px] lg:rounded-[16px] p-3 lg:p-5 lg:pt-7 flex flex-col gap-2 lg:gap-4 shadow-2xl ">
       {/* Rasm qismi */}
       <div className="relative">
         {/* Sana (Badge) - Mobil uchun kichikroq */}

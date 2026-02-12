@@ -13,12 +13,12 @@ const CategoryList = () => {
 
   return (
     /* This wrapper must be identical to HowItWorks */
-    <div className="container mx-auto px-4 py-8"> 
+    <div className="max-w-7xl mx-auto py-8"> 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         {categories.map((cat, index) => (
           <div 
             key={index} 
-            className="bg-[#7c8087] rounded-2xl p-5 flex flex-col items-center justify-center gap-4 transition-all hover:bg-[#888c93] cursor-pointer"
+            className="bg-[#E6EFFA]/50 rounded-2xl p-5 flex flex-col items-center justify-center gap-4 transition-all hover:bg-[#888c93] cursor-pointer"
           >
             <div className="text-[#1e88e5]">
               <cat.icon size={32} strokeWidth={2} />

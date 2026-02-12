@@ -18,6 +18,7 @@ function App() {
       <Navbar />
       <Hero />
       <HowItWorks />
+      <CategoryList/>
       <HomeCart
         date={"02-02-2007"}
         title={"Book"}
@@ -32,6 +33,8 @@ function App() {
         authorImage={"Book"}
         image={"Book"}
       />
+      
+      <FoundedPerson/>
       <ItemDetail />
     </>
   )
