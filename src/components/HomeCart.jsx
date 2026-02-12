@@ -3,17 +3,17 @@ import { Calendar, MoreHorizontal, ChevronRight } from 'lucide-react';
 
 const HomeCart = ({ date, title, author, authorImage, image }) => {
   return (
-    <div className="border border-[#D0D0D2] w-full max-w-2xs bg-grey rounded-[14px] lg:rounded-[16px] p-3 lg:p-5 lg:pt-7 flex flex-col gap-2 lg:gap-4 shadow-2xl ">
+    <div className="w-full border border-[#D0D0D2] bg-white rounded-2xl p-3 lg:p-5 flex flex-col gap-3 shadow-md hover:shadow-xl transition-shadow duration-300 h-full">
       {/* Rasm qismi */}
       <div className="relative">
         {/* Sana (Badge) - Mobil uchun kichikroq */}
-        <div className="absolute -top-3 lg:-top-4 left-1/2 -translate-x-1/2 z-10 bg-[#2589F5] text-white px-2 lg:px-5 py-1 lg:py-2 rounded-[8px] lg:rounded-[11] flex items-center gap-1 lg:gap-2 shadow-lg whitespace-nowrap">
+        <div className="absolute -top-3 lg:-top-4 left-1/2 -translate-x-1/2 z-10 bg-[#2589F5] text-white px-2 lg:px-5 py-1 lg:py-2 rounded-[8px] lg:rounded-[11] flex items-center gap-1 lg:gap-2 shadow-lg whitespace-nowrap mt-2">
           <Calendar size={12} className="lg:w-[18px] text-white" />
           <span className="font-bold text-[9px] lg:text-sm tracking-wide">{date}</span>
         </div>
         
         {/* Kitob rasmi foni */}
-        <div className="bg-[#F2F2F2] rounded-[14px] lg:rounded-[16px] p-4 lg:p-8 aspect-square flex items-center justify-center overflow-hidden">
+        <div className="bg-[#F2F2F2] rounded-[14px] lg:rounded-[16px]   aspect-square flex items-center justify-center overflow-hidden">
           <img 
             src={image} 
             alt={title} 

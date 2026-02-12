@@ -9,6 +9,7 @@ import HowItWorks from './components/HowItWorks'
 import ItemDetail from './components/ItemDetail'
 import CategoryList from './components/CategoryList'
 import FoundedPerson from './components/FoundedPerson'
+import FoundItems from './components/FoundItems'
 
 
 function App() {
@@ -18,21 +19,11 @@ function App() {
       <Navbar />
       <Hero />
       <HowItWorks />
-      <HomeCart
-        date={"02-02-2007"}
-        title={"Book"}
-        author={"Bekzod"}
-        authorImage={"Book"}
-        image={"Book"}
-      />
-      <HomeCart
-        date={"02-02-2007"}
-        title={"Book"}
-        author={"Bekzod"}
-        authorImage={"Book"}
-        image={"Book"}
-      />
-      <ItemDetail />
+      <CategoryList />
+      <FoundItems />
+      
+
+      {/* <ItemDetail /> */}
     </>
   )
 }

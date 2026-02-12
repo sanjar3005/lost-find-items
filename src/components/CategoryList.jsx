@@ -14,16 +14,20 @@ const CategoryList = () => {
   return (
     /* This wrapper must be identical to HowItWorks */
     <div className="max-w-85/100 mx-auto py-8"> 
+      <div className='flex justify-between my-8'>
+        <h1 className='text-3xl font-bold'>Turkum bo'yicha o'rganing</h1>
+        <p className='hover:text-[#1e88e5] cursor-pointer underline underline-offset-10 decoration-blue-600 pt-2'>Ko'proq</p>
+      </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         {categories.map((cat, index) => (
           <div 
             key={index} 
-            className="bg-[#7c8087] rounded-2xl p-5 flex flex-col items-center justify-center gap-4 transition-all hover:bg-[#888c93] cursor-pointer"
+            className="bg-[#e6effa]/50 rounded-2xl p-5 flex flex-col items-center justify-center gap-4 transition-all hover:bg-[#888c93] cursor-pointer"
           >
             <div className="text-[#1e88e5]">
               <cat.icon size={32} strokeWidth={2} />
             </div>
-            <span className="text-[#cfd4d9] text-sm font-semibold text-center">
+            <span className="text-[#838383] text-sm font-semibold text-center">
               {cat.title}
             </span>
           </div>
