@@ -9,7 +9,7 @@ import HowItWorks from './components/HowItWorks'
 import ItemDetail from './components/ItemDetail'
 import CategoryList from './components/CategoryList'
 import FoundedPerson from './components/FoundedPerson'
-
+import lostitems from './components/lostitems'
 
 function App() {
 
@@ -36,10 +36,7 @@ function App() {
       
       <FoundedPerson/>
       <ItemDetail />
-      <Lostitems
-        
-      
-      />
+      <lostitems />
         
     </>
   )
