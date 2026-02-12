@@ -1,1 +1,47 @@
 @import "tailwindcss";
+
+/* src/index.css */
+
+/* 1. Ensure Tailwind directives are at the top */
+
+/* 2. FORCE the container styles manually */
+@layer components {
+  .container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;  /* 16px padding on mobile */
+    padding-right: 1rem;
+  }
+
+  /* Breakpoints - exactly like Bootstrap */
+  @media (min-width: 640px) {
+    .container {
+      max-width: 640px;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .container {
+      max-width: 768px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container {
+      max-width: 1024px;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .container {
+      max-width: 1280px;
+    }
+  }
+
+  @media (min-width: 1536px) {
+    .container {
+      max-width: 1400px; /* Or 1320px if you prefer */
+    }
+  }
+}

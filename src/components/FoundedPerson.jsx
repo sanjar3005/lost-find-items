@@ -14,7 +14,7 @@ const FoundedPerson = () => {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto py-12">
+    <div className="max-w-85/100 mx-auto py-12">
       {/* Header section remains aligned with other components */}
       <div className="flex justify-between items-end mb-8">
         <div>

@@ -40,7 +40,7 @@ const HowItWorks = () => {
   ];
 
   return (
-    <div className="max-w-7xl w-full mx-auto p-4 px-0">
+    <div className="max-w-85/100 w-full mx-auto p-4 px-0">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {data.map((item, index) => (
           <InfoCard key={index} {...item} />

@@ -36,6 +36,11 @@ function App() {
       
       <FoundedPerson/>
       <ItemDetail />
+      <Lostitems
+        
+      
+      />
+        
     </>
   )
 }
