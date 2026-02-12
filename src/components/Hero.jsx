@@ -4,7 +4,7 @@ import { Search, Plus } from 'lucide-react';
 export default function Hero() {
   return (
     <section className="relative overflow-hidden bg-[#FAFAFA]">
-      <div className="max-w-7xl  mx-auto flex flex-col lg:flex-row items-center gap-6 lg:gap-20">
+      <div className="max-w-85/100  mx-auto flex flex-col lg:flex-row items-center gap-6 lg:gap-20">
         
         {/* Left Side: Content */}
         <div className="lg:w-1/2 z-10 text-center lg:text-left">
