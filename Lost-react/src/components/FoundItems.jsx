@@ -1,8 +1,10 @@
 import React from "react";
+import { useNavigate } from "react-router-dom"; // 1. Navigatsiya uchun import
 import HomeCart from "./HomeCart";
 
-
 export default function FoundItems() {
+    const navigate = useNavigate(); // 2. Hookni chaqiramiz
+
     const carts = [{
         date: "02-07-2025",
         title: "Kitob",
@@ -46,10 +48,11 @@ export default function FoundItems() {
                             author={cart.author}
                             authorImage={cart.authorImage}
                             image={cart.image}
+                            // 3. Navigate funksiyasini prop sifatida yuboramiz
+                            onDetails={() => navigate('/ItemDetail')} 
                         />
                     </div>
                 ))}
-
             </div>
         </div>
     )
