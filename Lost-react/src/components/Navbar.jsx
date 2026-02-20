@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
 import { Search, ChevronDown, Menu, X } from 'lucide-react';
+import Dropdown from './DropDown';
+import { useAuth } from '../context/AuthContext';
+; // Destructure the user and logoutUser function from the AuthContext
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, logoutUser } = useAuth()
 
   return (
     <nav className="w-full bg-white border-b border-slate-100 sticky top-0 z-50">
       {/* Main Container */}
       <div className="max-w-85/100 mx-auto h-20 flex items-center justify-between font-sans">
-        
+
         {/* Left Side: Logo */}
         <div className="flex items-center gap-3 cursor-pointer shrink-0">
           <div className="w-10 h-10 relative flex items-center justify-center">
@@ -49,10 +53,28 @@ export default function Navbar() {
           <button className="bg-[#1E85FF] hover:bg-blue-600 text-white px-6 lg:px-8 py-2.5 rounded-lg text-sm font-semibold shadow-lg shadow-blue-500/20 transition-all active:scale-95 whitespace-nowrap">
             E’lon berish
           </button>
+
+
+          <Dropdown
+            label="Profil"
+            items={[
+              { label: `${user?.first_name || "Foydalanuvchi"} ${user?.last_name || ""}`, href: "/profile" },
+              { label: "E’lonlarim", href: "/ads" },
+              { label: "Sozlamalar", href: "/settings" },
+              { type: "divider" },
+              {
+                type: "button",
+                label: "Chiqish",
+                danger: true,
+                onClick: logoutUser, // Call the logoutUser function from AuthContext
+              },
+            ]}
+          />
+
         </div>
 
         {/* Mobile Menu Button */}
-        <button 
+        <button
           className="xl:hidden p-2 text-slate-700 hover:bg-slate-100 rounded-lg"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
@@ -63,12 +85,12 @@ export default function Navbar() {
       {/* Mobile Menu Dropdown */}
       {isMobileMenuOpen && (
         <div className="xl:hidden absolute top-20 left-0 w-full bg-white border-b border-slate-100 shadow-xl py-6 px-4 flex flex-col gap-4">
-           <a href="#" className="text-[#0F172A] font-semibold py-2 border-b border-slate-50">Batafsil ma’lumot</a>
-           <a href="#" className="text-[#0F172A] font-semibold py-2 border-b border-slate-50">Biz bilan bog'lanish</a>
-           <a href="#" className="text-[#0F172A] font-semibold py-2 border-b border-slate-50">Profil</a>
-           <a href="#" className="text-[#0F172A] font-semibold py-2 border-b border-slate-50">Chat</a>
-           
-           <div className="relative mt-2">
+          <a href="#" className="text-[#0F172A] font-semibold py-2 border-b border-slate-50">Batafsil ma’lumot</a>
+          <a href="#" className="text-[#0F172A] font-semibold py-2 border-b border-slate-50">Biz bilan bog'lanish</a>
+          <a href="#" className="text-[#0F172A] font-semibold py-2 border-b border-slate-50">Profil</a>
+          <a href="#" className="text-[#0F172A] font-semibold py-2 border-b border-slate-50">Chat</a>
+
+          <div className="relative mt-2">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
               type="text"
