@@ -1,0 +1,8 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+/* src/index.css */
+
+/* 1. Ensure Tailwind directives are at the top */
+
+/* 2. FORCE the container styles manually */
