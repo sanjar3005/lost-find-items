@@ -135,9 +135,8 @@ const CreateItemPage = () => {
                     setError(backendErrors.location_address[0]);
                 } else if (backendErrors.contact_info) {
                     setError(backendErrors.contact_info[0]);
-                {else if (backendErrors.contact_info)
-                    setError(backendEroros.contactInfo[0])
-                }
+                }else if (backendErrors.contact_info){
+                    setError(backendErrors.contact_info[0])
 
                 } else {
                     setError("Noma'lum xatolik yuz berdi. Iltimos, ma'lumotlarni tekshirib qayta urinib ko'ring.");
