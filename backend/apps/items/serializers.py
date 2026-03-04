@@ -26,7 +26,7 @@ class ItemSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'description', 'category', 'user', 'owner_name',
             'date_lost_or_found', 'contact_info', 'latitude', 'longitude',
-            'location_address', 'is_resolved', 'status', 'images', 'uploaded_images', 'owner_picture'
+            'location_address', 'is_resolved', 'status', 'images', 'uploaded_images', 'owner_picture', 'created_at', 'views_count'
         ]
         # Force these to be read-only for strict security
         read_only_fields = ['user', 'is_resolved']

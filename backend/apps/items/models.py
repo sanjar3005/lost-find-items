@@ -25,9 +25,11 @@ class Item(BaseModel, models.Model):
     longitude = models.FloatField(null=True, blank=True)
 
     location_address = models.CharField(max_length=255, blank=True, null=True)
-
+    views_count = models.IntegerField(default=0)
+    
     is_resolved = models.BooleanField(default=False)
     status = models.CharField(max_length=10, choices=ItemStatus.choices)
+
 
     def __str__(self):
         return f"{self.title} - {self.user.first_name}"

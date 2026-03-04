@@ -88,7 +88,7 @@ export default function FoundItems() {
                                 authorImage={item.owner_picture || null}
 
                                 // Navigate to the specific item page
-                                onDetails={() => navigate(`/ItemDetail`)}
+                                onDetails={() => navigate(`/items/${item.id}`)}
                             />
                         </div>
                     );

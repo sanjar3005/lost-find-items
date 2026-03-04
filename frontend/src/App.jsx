@@ -35,6 +35,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/location-picker" element={<LocationPicker />} />
             <Route path="/create-item" element={<CreateItemPage />} />
+            <Route path="/items/:id" element={<ItemDetail />} />
             {/* Private Routes Wrapper */}
             <Route element={<PrivateRoute />}>
 
