@@ -30,6 +30,9 @@ class Item(BaseModel, models.Model):
     is_resolved = models.BooleanField(default=False)
     status = models.CharField(max_length=10, choices=ItemStatus.choices)
 
+    ai_labels = models.TextField(blank=True, null=True)
+    is_processed = models.BooleanField(default=False)
+
 
     def __str__(self):
         return f"{self.title} - {self.user.first_name}"

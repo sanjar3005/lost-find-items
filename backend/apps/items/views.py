@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from .tasks import process_item_images
 from rest_framework import viewsets
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
@@ -24,7 +25,9 @@ class ItemViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         # Absolute Security: Force the 'user' to be whoever is making the request
         # using their secure JWT token. The user CANNOT fake this.
-        serializer.save(user=self.request.user)
+        item = serializer.save(user=self.request.user)
+
+        process_item_images.delay(item.id)
 
 
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
