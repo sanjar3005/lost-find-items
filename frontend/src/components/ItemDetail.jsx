@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Clock, Eye, Heart, MapPin, ChevronLeft, ChevronRight, Phone, MessageCircle, ArrowLeft } from 'lucide-react';
 import api from '../service/api';
+import { useAuth } from '../context/AuthContext';
 
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -24,11 +25,13 @@ const BACKEND_URL = "http://127.0.0.1:8000";
 export default function ItemDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   // --- State ---
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isSaved, setIsSaved] = useState(false);
 
   // Carousel State
   const [activeImage, setActiveImage] = useState(0);
@@ -40,6 +43,7 @@ export default function ItemDetail() {
       try {
         const response = await api.get(`/api/items/${id}/`);
         setItem(response.data);
+        setIsSaved(Boolean(response.data?.is_saved));
       } catch (err) {
         console.error(err);
         setError("E'lon topilmadi yoki serverda xatolik yuz berdi.");
@@ -135,6 +139,20 @@ export default function ItemDetail() {
     scrollThumbnail(index);
   };
 
+  const handleToggleSaved = async () => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const response = await api.post(`/api/items/${id}/toggle-save/`);
+      setIsSaved(Boolean(response.data?.saved));
+    } catch (err) {
+      console.error('Saved toggle error:', err);
+    }
+  };
+
   return (
     <div className="bg-white min-h-screen pb-5 pt-3">
       <div className="max-w-[85%] mx-auto">
@@ -222,8 +240,15 @@ export default function ItemDetail() {
               </h1>
               <div className="flex gap-3 mb-3 shrink-0 max-h-8">
                   <div className="flex items-center gap-2 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-sm font-semibold">
-                    <Clock size={16} /> Sana: {formatDateUz(item.date_lost_or_found)}
+                    <Clock size={16} /> Sana: {item.date_lost_or_found ? formatDateUz(item.date_lost_or_found) : "Noma'lum"}
                   </div>
+                  <button
+                    onClick={handleToggleSaved}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold border transition-colors ${isSaved ? 'bg-red-50 text-red-600 border-red-100' : 'bg-white text-slate-600 border-slate-200 hover:border-red-200 hover:text-red-500'}`}
+                  >
+                    <Heart size={16} className={isSaved ? 'fill-current' : ''} />
+                    {isSaved ? "Saqlangan" : "Saqlash"}
+                  </button>
                 </div>
             </div>
 
@@ -231,8 +256,9 @@ export default function ItemDetail() {
 
             {/* Description */}
             <div className="mb-3">
-              <p className="text-slate-600 leading-relaxed text-base bg-slate-50 p-2 rounded-xl border border-slate-100">
-                <span className="font-bold">Izoh:</span> {item.description}
+              <p className="text-slate-600 leading-relaxed text-base bg-slate-50 p-3 rounded-xl border border-slate-100">
+                <span className="font-bold block mb-1">Batafsil ma'lumot:</span> 
+                {item.description || <span className="text-slate-400 italic">Qo'shimcha ma'lumot kiritilmagan</span>}
               </p>
             </div>
 
@@ -249,17 +275,23 @@ export default function ItemDetail() {
                 />
                 <div>
                   <h4 className="font-bold text-[#0F172A] text-lg">{item.owner_name}</h4>
-                  <p className="text-slate-400 text-sm">{item.location_address}</p>
+                  <p className="text-slate-400 text-sm">{item.location_address || "Manzil noma'lum"}</p>
                 </div>
               </div>
               <div className="flex gap-4">
                 {/* Changed to an <a> tag so it actually dials the phone! */}
-                <a
-                  href={`tel:${item.contact_info}`}
-                  className="flex-1 bg-white border border-slate-200 hover:border-[#3B82F6] hover:text-[#3B82F6] text-slate-700 py-2.5 rounded-xl font-semibold transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2"
-                >
-                  <Phone size={18} /> {item.contact_info}
-                </a>
+                {item.contact_info ? (
+                  <a
+                    href={`tel:${item.contact_info}`}
+                    className="flex-1 bg-white border border-slate-200 hover:border-[#3B82F6] hover:text-[#3B82F6] text-slate-700 py-2.5 rounded-xl font-semibold transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2"
+                  >
+                    <Phone size={18} /> {item.contact_info}
+                  </a>
+                ) : (
+                  <div className="flex-1 bg-slate-50 border border-slate-200 text-slate-400 py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 cursor-not-allowed cursor-not-allowed">
+                    <Phone size={18} /> Raqam yo'q
+                  </div>
+                )}
                 <button className="flex-1 bg-white border border-slate-200 hover:border-[#3B82F6] hover:text-[#3B82F6] text-slate-700 py-2.5 rounded-xl font-semibold transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2">
                   <MessageCircle size={18} /> Xabar
                 </button>
@@ -297,10 +329,12 @@ export default function ItemDetail() {
 
                 {/* Show the actual address floating over the bottom of the map */}
                 {/* z-[1000] is required to sit on top of Leaflet, pointer-events-none lets you drag the map through the text */}
-                <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-sm p-3 rounded-xl text-sm font-bold text-slate-800 shadow-lg z-[1000] pointer-events-none border border-slate-100 flex items-center gap-2">
-                  <MapPin size={18} className="text-[#3B82F6]" />
-                  {item.location_address}
-                </div>
+                {item.location_address && (
+                  <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-sm p-3 rounded-xl text-sm font-bold text-slate-800 shadow-lg z-[1000] pointer-events-none border border-slate-100 flex items-center gap-2">
+                    <MapPin size={18} className="text-[#3B82F6]" />
+                    {item.location_address}
+                  </div>
+                )}
 
               </div>
             </div>

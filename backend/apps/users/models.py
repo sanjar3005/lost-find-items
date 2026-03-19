@@ -23,8 +23,8 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     
     # Validator to ensure phone numbers are in valid format (e.g. +998901234567)
     phone_regex = RegexValidator(
-        regex=r'^\d{9}$', 
-        message="Phone number must be entered in the format: '993335566'. Up to 9 digits allowed."
+        regex=r'^\+?998?\d{9}$|^\d{9}$',
+        message="Telefon raqami noto'g'ri formatda. Iltimos, +998XXXXXXXXX yoki XXXXXXXXX formatida kiriting."
     )
     phone_number = models.CharField(validators=[phone_regex], max_length=17, unique=True, blank=True, null=True)
 
@@ -36,6 +36,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     is_active = models.BooleanField(default=True) # For banning users
     date_joined = models.DateTimeField(auto_now_add=True)
     avatar = models.ImageField(upload_to='users/avatars/', null=True, blank=True)
+    cover_image = models.ImageField(upload_to='users/covers/', null=True, blank=True)
 
     objects = CustomUserManager()
 

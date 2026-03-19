@@ -14,7 +14,9 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             'first_name': self.user.first_name,
             'last_name': self.user.last_name,
             'is_verified': self.user.is_verified,
-            'avatar': self.user.avatar.url if self.user.avatar else None
+            'has_usable_password': self.user.has_usable_password(),
+            'avatar': self.user.avatar.url if self.user.avatar else None,
+            'cover_image': self.user.cover_image.url if getattr(self.user, 'cover_image', None) else None
         })
 
         return data
@@ -77,8 +79,15 @@ class SendOTPSerializer(serializers.Serializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    has_usable_password = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ['id', 'email', 'first_name', 'last_name', 'phone_number', 'avatar']
-        
-        read_only_fields = ['id', 'email']
+        fields = ['id', 'email', 'first_name', 'last_name', 'phone_number', 'avatar', 'cover_image', 'has_usable_password']
+
+        read_only_fields = ['id', 'email', 'has_usable_password']
+
+    def get_has_usable_password(self, obj):
+        return obj.has_usable_password()
+class ChangePasswordSerializer(serializers.Serializer):
+    new_password = serializers.CharField(required=True)

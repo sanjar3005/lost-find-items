@@ -16,6 +16,7 @@ class ItemSerializer(serializers.ModelSerializer):
     
     owner_name = serializers.SerializerMethodField()
     owner_picture = serializers.SerializerMethodField()
+    is_saved = serializers.SerializerMethodField()
 
     class Meta:
         model = Item
@@ -23,10 +24,10 @@ class ItemSerializer(serializers.ModelSerializer):
             'id', 'title', 'description', 'category', 'user', 'owner_name',
             'date_lost_or_found', 'contact_info', 'latitude', 'longitude',
             'location_address', 'is_resolved', 'status', 'images', 
-            'uploaded_images', 'owner_picture', 'created_at', 'views_count',
+            'uploaded_images', 'owner_picture', 'is_saved', 'created_at', 'views_count',
             'ai_labels', 'is_processed' # Add these new fields here
         ]
-        read_only_fields = ['user', 'is_resolved', 'ai_labels', 'is_processed']
+        read_only_fields = ['user', 'ai_labels', 'is_processed']
 
     def create(self, validated_data):
         uploaded_images = validated_data.pop('uploaded_images', [])
@@ -50,6 +51,12 @@ class ItemSerializer(serializers.ModelSerializer):
                 return request.build_absolute_uri(obj.user.avatar.url)
             return obj.user.avatar.url
         return None
+
+    def get_is_saved(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user or not request.user.is_authenticated:
+            return False
+        return obj.saved_by.filter(user=request.user).exists()
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:

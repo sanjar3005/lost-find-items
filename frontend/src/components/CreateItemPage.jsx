@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { MapPin, Calendar, AlignLeft, Tag, Phone, Camera, X, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Sparkles, MapPin, Calendar, AlignLeft, Tag, Phone, Camera, X, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import LocationPicker from '../components/LocationPicker'; // The map component we built earlier
 import api from '../service/api'; // Your configured axios instance
 
@@ -9,6 +9,8 @@ import api from '../service/api'; // Your configured axios instance
 const CreateItemPage = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const { id } = useParams();
+    const isEditMode = !!id;
 
     // Route Protection: Kick out unauthenticated users
     useEffect(() => {
@@ -62,7 +64,7 @@ const CreateItemPage = () => {
                 
                 // DRF usually returns an array directly, or inside 'results' if paginated
                 // If you use pagination, it might be response.data.results
-                setDbCategories(response.data.results); 
+                setDbCategories(response.data.results || response.data); 
             } catch (err) {
                 console.error("Toifalarni yuklashda xatolik:", err);
             }
@@ -70,6 +72,42 @@ const CreateItemPage = () => {
 
         fetchCategories();
     }, []);
+
+    useEffect(() => {
+        if (!isEditMode) return;
+
+        const fetchItem = async () => {
+            try {
+                const response = await api.get(`/api/items/${id}/`);
+                const item = response.data;
+
+                setStatus(item.status || 'LOST');
+                setTitle(item.title || '');
+                setDescription(item.description || '');
+                setCategory(item.category || '');
+                setDateLost(item.date_lost_or_found || '');
+                setLocationLost(item.location_address || '');
+                setContactInfo(item.contact_info || '');
+
+                if (item.latitude && item.longitude) {
+                    setCoordinates({ lat: item.latitude, lng: item.longitude });
+                }
+
+                if (item.images && item.images.length > 0) {
+                    const existingPreviews = item.images
+                        .map((img) => img.image)
+                        .filter(Boolean)
+                        .map((url) => (url.startsWith('http') ? url : `http://127.0.0.1:8000${url}`));
+                    setImagePreviews(existingPreviews);
+                }
+            } catch (err) {
+                console.error("E'lonni yuklashda xatolik:", err);
+                setError("E'lon ma'lumotlarini yuklab bo'lmadi.");
+            }
+        };
+
+        fetchItem();
+    }, [id, isEditMode]);
 
     // Remove an image before uploading
     const removeImage = (index) => {
@@ -109,11 +147,15 @@ const CreateItemPage = () => {
 
         try {
             // Send to Django (Assuming your endpoint is /api/items/)
-            await api.post('/api/items/', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                }
-            });
+            if (isEditMode) {
+                await api.put(`/api/items/${id}/`, formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+            } else {
+                await api.post('/api/items/', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+            }
             
             setSuccess(true);
             // Redirect to their dashboard or the feed after 2 seconds
@@ -153,7 +195,7 @@ const CreateItemPage = () => {
         <div className="min-h-screen bg-white py-10 px-4 sm:px-6 lg:px-8 font-sans">
             <div className="max-w-2xl mx-auto bg-white sm:shadow-lg sm:border sm:border-slate-100 rounded-2xl p-6 sm:p-10">
                 
-                <h1 className="text-3xl font-extrabold text-slate-900 mb-2">E'lon joylash</h1>
+                <h1 className="text-3xl font-extrabold text-slate-900 mb-2">{isEditMode ? "E'lonni tahrirlash" : "E'lon joylash"}</h1>
                 <p className="text-slate-500 mb-8">Yo'qotgan yoki topib olgan buyumingiz haqida ma'lumot qoldiring.</p>
 
                 {error && (
@@ -164,9 +206,15 @@ const CreateItemPage = () => {
                 )}
 
                 {success && (
-                    <div className="mb-6 p-4 bg-green-50 rounded-xl flex items-start gap-3 border border-green-100">
-                        <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <p className="text-sm text-green-700 font-medium">E'lon muvaffaqiyatli joylandi! Yo'naltirilmoqda...</p>
+                    <div className="mb-6 p-4 bg-green-50 rounded-xl flex items-start gap-3 border border-green-100 flex-col">
+                        <div className="flex items-start gap-3">
+                            <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                            <p className="text-sm text-green-700 font-medium">{isEditMode ? "E'lon muvaffaqiyatli yangilandi! Yo'naltirilmoqda..." : "E'lon muvaffaqiyatli joylandi! Yo'naltirilmoqda..."}</p>
+                        </div>
+                        <div className="flex items-start gap-3">
+                            <Sparkles className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                            <p className="text-sm text-blue-700 font-medium">AI tizimimiz orqali e'loningiz toifasi avtomatik ravishda tekshiriladi va kerak bo'lsa yangilanadi!</p>
+                        </div>
                     </div>
                 )}
 
@@ -211,19 +259,25 @@ const CreateItemPage = () => {
                     {/* Category & Date Row */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {/* Category Dropdown */}
-                        <div className="bg-[#F3F4F6] rounded-xl px-4 py-3 border border-transparent focus-within:border-[#1E85FF] focus-within:bg-white transition-all">
-                            <label className="block text-xs font-medium text-slate-500 mb-1">Toifa</label>
-                            <select
+                        <div className="bg-[#F3F4F6] rounded-xl px-4 py-3 border border-transparent focus-within:border-[#1E85FF] focus-within:bg-white transition-all relative">
+                            <label className="block text-xs font-medium text-slate-500 mb-1 flex items-center gap-1">
+                                Toifa
+                                <span className="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full font-semibold flex items-center gap-1">
+                                    <Sparkles className="w-3 h-3" /> AI Yordamida
+                                </span>
+                            </label>
+                            {/* <select
                                 required
                                 value={category}
                                 onChange={(e) => setCategory(e.target.value)}
-                                className="block w-full bg-transparent border-none p-0 text-slate-900 focus:ring-0 sm:text-sm font-bold cursor-pointer"
+                                className="block w-full bg-transparent border-none p-0 text-slate-900 focus:ring-0 sm:text-sm font-bold cursor-pointer appearance-none"
                             >
-                                <option value="" disabled>Toifani tanlang</option>
+                                <option value="" disabled>Toifani tanlang (yoki AI ga qo'yib bering)</option>
                                 {dbCategories.map(cat => (
                                     <option key={cat.id} value={cat.id}>{cat.name}</option>
                                 ))}
-                            </select>
+                            </select> */}
+                            <p className="text-[10px] text-slate-400 mt-1">Rasmingiz asosida AI eng mos toifani avtomatik aniqlaydi.</p>
                         </div>
 
                         {/* Date Input */}
@@ -232,10 +286,9 @@ const CreateItemPage = () => {
                                 <Calendar className="h-5 w-5 text-slate-400 group-focus-within:text-[#1E85FF] transition-colors" />
                             </div>
                             <div className="bg-[#F3F4F6] rounded-xl px-4 pt-2 pb-2 pl-12 border border-transparent focus-within:border-[#1E85FF] focus-within:bg-white transition-all h-full">
-                                <label className="block text-xs font-medium text-slate-500 mb-0.5">Sana</label>
+                                <label className="block text-xs font-medium text-slate-500 mb-0.5">Sana (Ixtiyoriy)</label>
                                 <input
                                     type="date"
-                                    required
                                     value={dateLost}
                                     onChange={(e) => setDateLost(e.target.value)}
                                     className="block w-full bg-transparent border-none p-0 text-slate-900 focus:ring-0 sm:text-sm font-bold"
@@ -250,9 +303,8 @@ const CreateItemPage = () => {
                             <AlignLeft className="h-5 w-5 text-slate-400 group-focus-within:text-[#1E85FF] transition-colors" />
                         </div>
                         <div className="bg-[#F3F4F6] rounded-xl px-4 pt-2 pb-2 pl-12 border border-transparent focus-within:border-[#1E85FF] focus-within:bg-white transition-all">
-                            <label className="block text-xs font-medium text-slate-500 mb-0.5">Batafsil ma'lumot</label>
+                            <label className="block text-xs font-medium text-slate-500 mb-0.5">Batafsil ma'lumot (Ixtiyoriy)</label>
                             <textarea
-                                required
                                 rows="3"
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
@@ -268,7 +320,7 @@ const CreateItemPage = () => {
                             <MapPin className="h-5 w-5 text-slate-400 group-focus-within:text-[#1E85FF] transition-colors" />
                         </div>
                         <div className="bg-[#F3F4F6] rounded-xl px-4 pt-2 pb-2 pl-12 border border-transparent focus-within:border-[#1E85FF] focus-within:bg-white transition-all">
-                            <label className="block text-xs font-medium text-slate-500 mb-0.5">Taxminiy manzil</label>
+                            <label className="block text-xs font-medium text-slate-500 mb-0.5">Mo'ljal</label>
                             <input
                                 type="text"
                                 required
@@ -292,10 +344,9 @@ const CreateItemPage = () => {
                             <Phone className="h-5 w-5 text-slate-400 group-focus-within:text-[#1E85FF] transition-colors" />
                         </div>
                         <div className="bg-[#F3F4F6] rounded-xl px-4 pt-2 pb-2 pl-12 border border-transparent focus-within:border-[#1E85FF] focus-within:bg-white transition-all">
-                            <label className="block text-xs font-medium text-slate-500 mb-0.5">Aloqa uchun</label>
+                            <label className="block text-xs font-medium text-slate-500 mb-0.5">Aloqa uchun (Ixtiyoriy)</label>
                             <input
                                 type="text"
-                                required
                                 value={contactInfo}
                                 onChange={(e) => setContactInfo(e.target.value)}
                                 className="block w-full bg-transparent border-none p-0 text-slate-900 placeholder-slate-400 focus:ring-0 sm:text-sm font-bold"
@@ -345,9 +396,16 @@ const CreateItemPage = () => {
                         <button
                             type="submit"
                             disabled={loading || success}
-                            className="w-full flex justify-center py-4 px-4 border border-transparent rounded-xl shadow-sm text-base font-bold text-white bg-[#1E85FF] hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50"
+                            className="w-full flex items-center justify-center py-4 px-4 border border-transparent rounded-xl shadow-sm text-base font-bold text-white bg-[#1E85FF] hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50"
                         >
-                            {loading ? "Joylanmoqda..." : "E'lonni joylash"}
+                            {loading ? (
+                                <>
+                                    <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                                    Joylanmoqda...
+                                </>
+                            ) : (
+                                isEditMode ? "E'lonni yangilash" : "E'lonni joylash"
+                            )}
                         </button>
                     </div>
 

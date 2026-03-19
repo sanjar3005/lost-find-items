@@ -27,10 +27,12 @@ export default function Hero() {
                 E'lon berish
               </button>
             </Link>
-            <button className="flex items-center gap-2 bg-white border border-slate-200 hover:border-[#1E85FF] hover:text-[#1E85FF] text-slate-700 px-8 py-3.5 rounded-xl font-bold transition-all w-full sm:w-auto justify-center">
-              <Search size={20} strokeWidth={3} />
-              Qidirish
-            </button>
+            <Link to="/items" className="w-full sm:w-auto">
+              <button className="flex items-center gap-2 bg-white border border-slate-200 hover:border-[#1E85FF] hover:text-[#1E85FF] text-slate-700 px-8 py-3.5 rounded-xl font-bold transition-all w-full justify-center">
+                <Search size={20} strokeWidth={3} />
+                Qidirish
+              </button>
+            </Link>
           </div>
         </div>
 

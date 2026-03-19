@@ -15,16 +15,16 @@ class ItemStatus(models.TextChoices):
 class Item(BaseModel, models.Model):
 
     title = models.CharField(max_length=255)
-    description = models.TextField()
+    description = models.TextField(null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='items', null=True, blank=True)
     user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='items')
-    date_lost_or_found = models.DateField()
-    contact_info = models.CharField(max_length=255)
+    date_lost_or_found = models.DateField(null=True, blank=True)
+    contact_info = models.CharField(max_length=255, null=True, blank=True)
 
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
 
-    location_address = models.CharField(max_length=255, blank=True, null=True)
+    location_address = models.CharField(max_length=255)
     views_count = models.IntegerField(default=0)
     
     is_resolved = models.BooleanField(default=False)
@@ -53,3 +53,15 @@ class ItemImage(BaseModel, models.Model):
     
     def __str__(self):
         return f"Image for {self.item.title}"
+
+
+class SavedItem(BaseModel, models.Model):
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='saved_items')
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='saved_by')
+
+    class Meta:
+        unique_together = ('user', 'item')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.email} -> {self.item.title}"

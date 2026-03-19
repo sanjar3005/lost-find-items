@@ -4,6 +4,8 @@ import HomeCart from "./HomeCart";
 import api from "../service/api";
 import { useEffect } from "react";
 
+const BACKEND_URL = "http://127.0.0.1:8000";
+
 export default function FoundItems() {
     const navigate = useNavigate(); // 2. Hookni chaqiramiz
     const [items, setItems] = React.useState([]);
@@ -14,47 +16,26 @@ export default function FoundItems() {
 
     const fetchFourItems = async () => {
         // Django will see limit=4 and only return 4 items!
-        const response = await api.get('/api/items/?limit=4');
+        const response = await api.get('/api/items/?status=FOUND&limit=4');
 
         // Note: When you turn on pagination, DRF wraps your data in a 'results' object
-        setItems(response.data.results);
-        console.log("Fetched items:", response.data.results);
+        const fetched = response.data.results || response.data || [];
+        setItems(fetched);
+        console.log("Fetched items:", fetched);
     };
 
 
-
-    const carts = [{
-        date: "02-07-2025",
-        title: "Kitob",
-        author: "Asilbek",
-        authorImage: "/img/book.png",
-        image: "/img/book.png",
-    }, {
-        date: "04-07-2026",
-        title: "Mushuk",
-        author: "Kamol",
-        authorImage: "/img/cat.png",
-        image: "/img/cat.png",
-    }, {
-        date: "25-08-2026",
-        title: "Airpods",
-        author: "Odil",
-        authorImage: "/img/airpods.png",
-        image: "/img/airpods.png",
-    }, {
-        date: "02-02-2026",
-        title: "Kuchuk",
-        author: "Zarina",
-        authorImage: "/img/dog.png",
-        image: "/img/dog.png",
-    },
-    ]
 
     return (
         <div className="max-w-85/100 mx-auto">
             <div className='flex justify-between my-8'>
                 <h1 className='text-3xl font-bold'>Topib olingan buyumlar</h1>
-                <p className='hover:text-[#1e88e5] cursor-pointer underline underline-offset-10 decoration-blue-600 pt-2'>Ko'proq</p>
+                <button
+                    onClick={() => navigate('/items?status=FOUND')}
+                    className='hover:text-[#1e88e5] cursor-pointer underline underline-offset-10 decoration-blue-600 pt-2'
+                >
+                    Ko'proq
+                </button>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-7 justify-between">
@@ -73,7 +54,7 @@ export default function FoundItems() {
                         <div className="flex justify-center" key={item.id}>
                             <HomeCart
                                 // Pass the exact fields from your JSON
-                                date={item.date_lost_or_found}
+                                date={item.date_lost_or_found || "Noma'lum"}
                                 title={item.title}
                                 author={item.owner_name}
 
@@ -89,6 +70,9 @@ export default function FoundItems() {
 
                                 // Navigate to the specific item page
                                 onDetails={() => navigate(`/items/${item.id}`)}
+                                onMap={() => navigate(`/items?focus=${item.id}&view=map`)}
+                                itemId={item.id}
+                                initialSaved={item.is_saved}
                             />
                         </div>
                     );

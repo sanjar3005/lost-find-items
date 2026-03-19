@@ -1,8 +1,37 @@
-import React from 'react';
-import { Calendar, ChevronRight } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Calendar, ChevronRight, Heart } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import api from '../service/api';
 
 // 1. onDetails propini qo'shdik
-const HomeCart = ({ date, title, author, authorImage, image, onDetails }) => {
+const HomeCart = ({ date, title, author, authorImage, image, onDetails, onMap, itemId, initialSaved = false, onSavedChange }) => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [saved, setSaved] = useState(Boolean(initialSaved));
+
+  useEffect(() => {
+    setSaved(Boolean(initialSaved));
+  }, [initialSaved, itemId]);
+
+  const handleToggleSaved = async (e) => {
+    e.stopPropagation();
+
+    if (!itemId) return;
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const res = await api.post(`/api/items/${itemId}/toggle-save/`);
+      const newSaved = Boolean(res.data?.saved);
+      setSaved(newSaved);
+      if (onSavedChange) onSavedChange(itemId, newSaved);
+    } catch (error) {
+      console.error('Failed to toggle save from card:', error);
+    }
+  };
   return (
     <div className="w-full border border-[#D0D0D2] bg-white rounded-2xl p-3 lg:p-5 flex flex-col gap-4 shadow-md hover:shadow-xl transition-shadow duration-300 h-full">
       {/* Rasm qismi */}
@@ -41,10 +70,22 @@ const HomeCart = ({ date, title, author, authorImage, image, onDetails }) => {
                 {author || "Asilbek"}
               </span>
             </div>
-            
-            <button className="flex items-center text-[#2589F5] font-bold text-[10px] lg:text-lg hover:underline whitespace-nowrap">
-              Xarita <ChevronRight size={14} className="ml-0.5" />
-            </button>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={handleToggleSaved}
+                className={`p-1.5 rounded-full border transition-colors ${saved ? 'text-red-500 border-red-200 bg-red-50' : 'text-slate-400 border-slate-200 hover:text-red-500 hover:border-red-200'}`}
+                aria-label="Saqlash"
+              >
+                <Heart size={14} className={saved ? 'fill-current' : ''} />
+              </button>
+              <button
+                onClick={onMap}
+                className="flex items-center text-[#2589F5] font-bold text-[10px] lg:text-lg hover:underline whitespace-nowrap"
+              >
+                Xarita <ChevronRight size={14} className="ml-0.5" />
+              </button>
+            </div>
           </div>
         </div>
 

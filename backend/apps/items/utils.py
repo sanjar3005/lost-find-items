@@ -69,8 +69,16 @@ def get_labels_with_colors(image_path):
     # print(f"SENTENCE: {caption}")
     # print(f"RESULTS : {', '.join(final_output)}")
     # print("═"*50)
-    
-    return f"{caption}-{','.join(final_output)}"
+    print({
+        "caption": caption,
+        "labels_with_colors": final_output,
+        "nouns": [obj.title() for obj in unique_objects]
+    })
+    return {
+        "caption": caption,
+        "labels_with_colors": final_output,
+        "nouns": [obj.title() for obj in unique_objects]
+    }
 
 
 if __name__ == "__main__":

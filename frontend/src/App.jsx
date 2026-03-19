@@ -19,7 +19,9 @@ import Login from './components/Login';
 import Register from './components/Register';
 import LocationPicker from './components/LocationPicker';
 import CreateItemPage from './components/CreateItemPage';
-
+import Profile from './components/Profile';
+import ProfileEdit from './components/ProfileEdit';
+import MapSearchPage from "./components/MapSearchPage";
 function App() {
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
@@ -35,9 +37,14 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/location-picker" element={<LocationPicker />} />
             <Route path="/create-item" element={<CreateItemPage />} />
+            <Route path="/edit-item/:id" element={<CreateItemPage />} />
+            <Route path="/items" element={<MapSearchPage />} />
             <Route path="/items/:id" element={<ItemDetail />} />
             {/* Private Routes Wrapper */}
             <Route element={<PrivateRoute />}>
+              
+              <Route path="/profile" element={<><Profile /><Footer /></>} />
+              <Route path="/settings" element={<><ProfileEdit /><Footer /></>} />
 
               {/* You must define a path (like "/") and put your components inside the 'element' prop */}
               <Route path="/" element={

@@ -3,7 +3,7 @@ import React from 'react';
 import { UserPlus, Bell, AlertCircle } from 'lucide-react';
 
 const InfoCard = ({ icon: Icon, title, description }) => (
-  <div className=" bg-[#E6EFFA]/50 rounded-2xl p-5 flex flex-col gap-4 transition-all hover:bg-[#888c93]">
+  <div className=" bg-[#E6EFFA]/50 rounded-2xl p-5 flex flex-col gap-4 transition-all hover:shadow-lg cursor-pointer">
     {/* Icon Container - Smaller size */}
     <div className="bg-[#1e88e5] w-12 h-12 rounded-lg flex items-center justify-center shadow-md">
       <Icon size={24} color="white" />
