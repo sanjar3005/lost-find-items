@@ -40,14 +40,8 @@ function App() {
             <Route path="/edit-item/:id" element={<CreateItemPage />} />
             <Route path="/items" element={<MapSearchPage />} />
             <Route path="/items/:id" element={<ItemDetail />} />
-            {/* Private Routes Wrapper */}
-            <Route element={<PrivateRoute />}>
-              
-              <Route path="/profile" element={<><Profile /><Footer /></>} />
-              <Route path="/settings" element={<><ProfileEdit /><Footer /></>} />
 
-              {/* You must define a path (like "/") and put your components inside the 'element' prop */}
-              <Route path="/" element={
+            <Route path="/" element={
                 <>
                   <Hero />
                   <HowItWorks />
@@ -58,7 +52,16 @@ function App() {
                   <UserReview />
                   <Footer />
                 </>
-              } />
+              } />  
+
+            {/* Private Routes Wrapper */}
+            <Route element={<PrivateRoute />}>
+              
+              <Route path="/profile" element={<><Profile /><Footer /></>} />
+              <Route path="/settings" element={<><ProfileEdit /><Footer /></>} />
+
+              {/* You must define a path (like "/") and put your components inside the 'element' prop */}
+              
 
             </Route>
           </Routes>
