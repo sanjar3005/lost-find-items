@@ -30,17 +30,17 @@ const CategoryList = () => {
 
   return (
     /* This wrapper must be identical to HowItWorks */
-    <div className="max-w-85/100 mx-auto py-8"> 
-      <div className='flex justify-between my-8'>
-        <h1 className='text-3xl font-bold'>Turkum bo'yicha o'rganing</h1>
+    <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-10">
+      <div className='flex justify-between items-end mb-5 sm:mb-8 gap-3'>
+        <h1 className='text-xl sm:text-2xl lg:text-3xl font-bold'>Turkum bo'yicha o'rganing</h1>
         <button
           onClick={() => navigate('/items')}
-          className='hover:text-[#1e88e5] cursor-pointer underline underline-offset-10 decoration-blue-600 pt-2'
+          className='hover:text-[#1e88e5] cursor-pointer underline underline-offset-4 sm:underline-offset-8 decoration-blue-600 text-sm sm:text-base pb-1 whitespace-nowrap'
         >
           Ko'proq
         </button>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
         {categories.map((cat, index) => (
           <div
             key={cat.id || index}

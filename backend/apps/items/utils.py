@@ -1,24 +1,66 @@
-import torch
 from PIL import Image
 from transformers import BlipProcessor, BlipForQuestionAnswering, BlipForConditionalGeneration
 import nltk
 import warnings
 import os
+from threading import Lock
 
 # --- 1. INITIAL SETUP ---
 os.environ["TRANSFORMERS_VERBOSITY"] = "error"
 warnings.filterwarnings("ignore")
 
-nltk.download('punkt', quiet=True)
-nltk.download('punkt_tab', quiet=True)
-nltk.download('averaged_perceptron_tagger_eng', quiet=True)
+_MODEL_LOCK = Lock()
+_NLTK_LOCK = Lock()
+_PROCESSOR = None
+_CAPTION_MODEL = None
+_VQA_MODEL = None
+_NLTK_READY = False
+
+
+def _ensure_nltk_data():
+    global _NLTK_READY
+    if _NLTK_READY:
+        return
+
+    with _NLTK_LOCK:
+        if _NLTK_READY:
+            return
+
+        resources = [
+            ("tokenizers/punkt", "punkt"),
+            ("tokenizers/punkt_tab", "punkt_tab"),
+            ("taggers/averaged_perceptron_tagger_eng", "averaged_perceptron_tagger_eng"),
+        ]
+
+        for resource_path, package_name in resources:
+            try:
+                nltk.data.find(resource_path)
+            except LookupError:
+                try:
+                    nltk.download(package_name, quiet=True)
+                except Exception:
+                    continue
+
+        _NLTK_READY = True
+
+
+def _get_models():
+    global _PROCESSOR, _CAPTION_MODEL, _VQA_MODEL
+    if _PROCESSOR is not None and _CAPTION_MODEL is not None and _VQA_MODEL is not None:
+        return _PROCESSOR, _CAPTION_MODEL, _VQA_MODEL
+
+    with _MODEL_LOCK:
+        if _PROCESSOR is None or _CAPTION_MODEL is None or _VQA_MODEL is None:
+            _PROCESSOR = BlipProcessor.from_pretrained("Salesforce/blip-vqa-base")
+            _CAPTION_MODEL = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
+            _VQA_MODEL = BlipForQuestionAnswering.from_pretrained("Salesforce/blip-vqa-base")
+
+    return _PROCESSOR, _CAPTION_MODEL, _VQA_MODEL
 
 def get_labels_with_colors(image_path):
     # --- 2. LOAD AI MODELS ---
     print("Loading AI models...")
-    processor = BlipProcessor.from_pretrained("Salesforce/blip-vqa-base")
-    caption_model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
-    vqa_model = BlipForQuestionAnswering.from_pretrained("Salesforce/blip-vqa-base")
+    processor, caption_model, vqa_model = _get_models()
 
     if not os.path.exists(image_path):
         print(f"Error: File '{image_path}' not found.")
@@ -33,6 +75,7 @@ def get_labels_with_colors(image_path):
     caption = processor.decode(out[0], skip_special_tokens=True)
 
     # --- 4. EXTRACT & FILTER VOCABULARY ---
+    _ensure_nltk_data()
     tokens = nltk.word_tokenize(caption)
     tags = nltk.pos_tag(tokens)
 

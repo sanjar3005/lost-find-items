@@ -1,26 +1,68 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
-/* src/index.css */
-
-/* 1. Ensure Tailwind directives are at the top */
-
-/* 2. FORCE the container styles manually */
-
-/* Custom Leaflet Popup */
-.custom-popup .leaflet-popup-content-wrapper {
-    padding: 0;
-    margin: 0;
-    border-radius: 8px;
-    overflow: hidden;
+/* ── Base ─────────────────────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
-.custom-popup .leaflet-popup-content {
-    margin: 0;
-    width: 192px !important;
+
+body {
+  overflow-x: hidden;
 }
 
 input:focus,
 textarea:focus,
 select:focus {
-    outline: none !important;
+  outline: none !important;
+}
+
+/* ── Leaflet z-index fix ──────────────────────────────────────────── */
+/*
+  The sticky Navbar uses z-50 (Tailwind = 50).
+  Leaflet's default tile pane is z-200, marker pane z-600, popup pane z-700.
+  We lower them so they stay inside the map container and don't bleed over
+  the navbar or other UI elements.
+*/
+.leaflet-pane {
+  z-index: 10 !important;
+}
+.leaflet-tile-pane {
+  z-index: 10 !important;
+}
+.leaflet-overlay-pane {
+  z-index: 11 !important;
+}
+.leaflet-marker-pane {
+  z-index: 12 !important;
+}
+.leaflet-tooltip-pane {
+  z-index: 13 !important;
+}
+.leaflet-popup-pane {
+  z-index: 14 !important;
+}
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 15 !important;
+}
+/* Keep the map container itself below the navbar */
+.leaflet-container {
+  z-index: 1;
+}
+
+/* ── Custom Leaflet Popup ─────────────────────────────────────────── */
+.custom-popup .leaflet-popup-content-wrapper {
+  padding: 0;
+  margin: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+.custom-popup .leaflet-popup-content {
+  margin: 0;
+  width: 192px !important;
+}
+.custom-popup .leaflet-popup-tip-container {
+  margin-top: -1px;
 }

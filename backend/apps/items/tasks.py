@@ -1,11 +1,12 @@
 # tasks.py
 from celery import shared_task
 from .models import Item, ItemImage, Category # Assuming a separate image model
-from .utils import get_labels_with_colors # Your AI logic moved to utils.py
 
 @shared_task
 def process_item_images(item_id):
     try:
+        from .utils import get_labels_with_colors
+
         item = Item.objects.get(id=item_id)
         image_obj = item.images.first()
         

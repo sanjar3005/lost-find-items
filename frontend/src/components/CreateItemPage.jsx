@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Sparkles, MapPin, Calendar, AlignLeft, Tag, Phone, Camera, X, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { Sparkles, MapPin, Calendar, AlignLeft, Tag, Phone, Camera, X, CheckCircle2, AlertCircle, Loader2, Camera as CameraIcon } from 'lucide-react';
 import LocationPicker from '../components/LocationPicker'; // The map component we built earlier
 import api from '../service/api'; // Your configured axios instance
 
@@ -35,25 +35,89 @@ const CreateItemPage = () => {
     const [images, setImages] = useState([]);
     const [imagePreviews, setImagePreviews] = useState([]);
 
+    // Camera State
+    const [showCamera, setShowCamera] = useState(false);
+    const videoRef = useRef(null);
+    const canvasRef = useRef(null);
+    const streamRef = useRef(null);
+
     // UI States
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
 
     // Handle Image Selection
-    const handleImageChange = (e) => {
-        const files = Array.from(e.target.files);
-        if (files.length + images.length > 5) {
+    const appendSelectedFiles = (fileList) => {
+        const files = Array.from(fileList || []);
+        if (files.length === 0) return;
+
+        if (files.length + imagePreviews.length > 5) {
             setError("Maksimal 5 ta rasm yuklash mumkin.");
             return;
         }
-        
+
         setImages(prev => [...prev, ...files]);
-        
+
         // Create local URLs to show previews to the user
         const newPreviews = files.map(file => URL.createObjectURL(file));
         setImagePreviews(prev => [...prev, ...newPreviews]);
     };
+
+    const handleImageChange = (e) => {
+        appendSelectedFiles(e.target.files);
+        e.target.value = '';
+    };
+
+    const handleCameraCapture = (e) => {
+        appendSelectedFiles(e.target.files);
+        e.target.value = '';
+    };
+
+    const startCamera = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: 'environment' } 
+            });
+            streamRef.current = stream;
+            setShowCamera(true);
+        } catch (err) {
+            console.error("Error accessing camera:", err);
+            setError("Kameraga kirish imkoni bo'lmadi. Iltimos, ruxsat bering.");
+        }
+    };
+
+    const stopCamera = () => {
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current = null;
+        }
+        setShowCamera(false);
+    };
+
+    const captureImage = () => {
+        if (videoRef.current && canvasRef.current) {
+            const video = videoRef.current;
+            const canvas = canvasRef.current;
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            canvas.toBlob((blob) => {
+                if (blob) {
+                    const file = new File([blob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
+                    appendSelectedFiles([file]);
+                    stopCamera();
+                }
+            }, 'image/jpeg', 0.8);
+        }
+    };
+
+    useEffect(() => {
+        if (showCamera && videoRef.current && streamRef.current) {
+            videoRef.current.srcObject = streamRef.current;
+        }
+    }, [showCamera]);
 
 
     useEffect(() => {
@@ -192,11 +256,11 @@ const CreateItemPage = () => {
     if (!user) return null; // Prevent flicker before redirect
 
     return (
-        <div className="min-h-screen bg-white py-10 px-4 sm:px-6 lg:px-8 font-sans">
-            <div className="max-w-2xl mx-auto bg-white sm:shadow-lg sm:border sm:border-slate-100 rounded-2xl p-6 sm:p-10">
+        <div className="min-h-screen bg-white py-4 sm:py-8 lg:py-10 px-3 sm:px-6 lg:px-8 font-sans">
+            <div className="max-w-2xl mx-auto bg-white sm:shadow-lg sm:border sm:border-slate-100 rounded-xl sm:rounded-2xl p-4 sm:p-8 lg:p-10">
                 
-                <h1 className="text-3xl font-extrabold text-slate-900 mb-2">{isEditMode ? "E'lonni tahrirlash" : "E'lon joylash"}</h1>
-                <p className="text-slate-500 mb-8">Yo'qotgan yoki topib olgan buyumingiz haqida ma'lumot qoldiring.</p>
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-2">{isEditMode ? "E'lonni tahrirlash" : "E'lon joylash"}</h1>
+                <p className="text-sm sm:text-base text-slate-500 mb-6 sm:mb-8">Yo'qotgan yoki topib olgan buyumingiz haqida ma'lumot qoldiring.</p>
 
                 {error && (
                     <div className="mb-6 p-4 bg-red-50 rounded-xl flex items-start gap-3 border border-red-100">
@@ -218,21 +282,21 @@ const CreateItemPage = () => {
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
                     
                     {/* LOST vs FOUND Toggle */}
-                    <div className="flex p-1 bg-[#F3F4F6] rounded-xl mb-6">
+                    <div className="flex p-1 bg-[#F3F4F6] rounded-xl mb-4 sm:mb-6">
                         <button
                             type="button"
                             onClick={() => setStatus('LOST')}
-                            className={`flex-1 py-3 text-sm font-bold rounded-lg transition-all ${status === 'LOST' ? 'bg-white text-red-500 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            className={`flex-1 py-2.5 sm:py-3 text-xs sm:text-sm font-bold rounded-lg transition-all ${status === 'LOST' ? 'bg-white text-red-500 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                         >
                             Yo'qotdim (Lost)
                         </button>
                         <button
                             type="button"
                             onClick={() => setStatus('FOUND')}
-                            className={`flex-1 py-3 text-sm font-bold rounded-lg transition-all ${status === 'FOUND' ? 'bg-white text-green-500 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            className={`flex-1 py-2.5 sm:py-3 text-xs sm:text-sm font-bold rounded-lg transition-all ${status === 'FOUND' ? 'bg-white text-green-500 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                         >
                             Topib oldim (Found)
                         </button>
@@ -359,10 +423,10 @@ const CreateItemPage = () => {
                     <div className="space-y-3">
                         <label className="block text-sm font-bold text-slate-900">Rasmlar (Maks. 5 ta)</label>
                         
-                        <div className="flex flex-wrap gap-4">
+                        <div className="flex flex-wrap gap-3">
                             {/* Previews */}
                             {imagePreviews.map((preview, index) => (
-                                <div key={index} className="relative w-24 h-24 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+                                <div key={index} className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
                                     <img src={preview} alt="Preview" className="w-full h-full object-cover" />
                                     <button
                                         type="button"
@@ -375,28 +439,40 @@ const CreateItemPage = () => {
                             ))}
 
                             {/* Upload Button */}
-                            {images.length < 5 && (
-                                <label className="w-24 h-24 flex flex-col items-center justify-center bg-[#F3F4F6] border-2 border-dashed border-slate-300 rounded-xl cursor-pointer hover:border-[#1E85FF] hover:bg-blue-50 transition-colors">
-                                    <Camera className="w-8 h-8 text-slate-400 mb-1" />
-                                    <span className="text-xs font-medium text-slate-500">Qo'shish</span>
-                                    <input 
-                                        type="file" 
-                                        multiple 
-                                        accept="image/jpeg, image/png, image/jpg" 
-                                        className="hidden" 
-                                        onChange={handleImageChange} 
-                                    />
-                                </label>
+                            {imagePreviews.length < 5 && (
+                                <>
+                                    <label htmlFor="gallery-upload" className="w-20 h-20 sm:w-24 sm:h-24 flex flex-col items-center justify-center bg-[#F3F4F6] border-2 border-dashed border-slate-300 rounded-xl cursor-pointer hover:border-[#1E85FF] hover:bg-blue-50 transition-colors">
+                                        <Camera className="w-6 h-6 sm:w-8 sm:h-8 text-slate-400 mb-1" />
+                                        <span className="text-[11px] sm:text-xs font-medium text-slate-500">Galereya</span>
+                                        <input 
+                                            id="gallery-upload"
+                                            type="file" 
+                                            multiple 
+                                            accept="image/*" 
+                                            className="hidden" 
+                                            onChange={handleImageChange} 
+                                        />
+                                    </label>
+
+                                    <button 
+                                        type="button"
+                                        onClick={startCamera}
+                                        className="w-20 h-20 sm:w-24 sm:h-24 flex flex-col items-center justify-center bg-[#F3F4F6] border-2 border-dashed border-slate-300 rounded-xl cursor-pointer hover:border-[#1E85FF] hover:bg-blue-50 transition-colors"
+                                    >
+                                        <CameraIcon className="w-6 h-6 sm:w-8 sm:h-8 text-slate-400 mb-1" />
+                                        <span className="text-[11px] sm:text-xs font-medium text-slate-500">Kamera</span>
+                                    </button>
+                                </>
                             )}
                         </div>
                     </div>
 
                     {/* Submit Button */}
-                    <div className="pt-6">
+                    <div className="pt-4 sm:pt-6">
                         <button
                             type="submit"
                             disabled={loading || success}
-                            className="w-full flex items-center justify-center py-4 px-4 border border-transparent rounded-xl shadow-sm text-base font-bold text-white bg-[#1E85FF] hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50"
+                            className="w-full flex items-center justify-center py-3 sm:py-4 px-4 border border-transparent rounded-xl shadow-sm text-sm sm:text-base font-bold text-white bg-[#1E85FF] hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50"
                         >
                             {loading ? (
                                 <>
@@ -408,6 +484,39 @@ const CreateItemPage = () => {
                             )}
                         </button>
                     </div>
+
+                    {/* Camera Modal */}
+                    {showCamera && (
+                        <div className="fixed inset-0 z-[9999] bg-black/90 flex flex-col items-center justify-center p-4">
+                            <div className="relative w-full max-w-md bg-black rounded-2xl overflow-hidden shadow-2xl">
+                                <button
+                                    type="button"
+                                    onClick={stopCamera}
+                                    className="absolute top-4 right-4 z-10 p-2 bg-black/50 text-white rounded-full hover:bg-white/20 transition-colors"
+                                >
+                                    <X className="w-6 h-6" />
+                                </button>
+                                
+                                <video 
+                                    ref={videoRef} 
+                                    autoPlay 
+                                    playsInline
+                                    className="w-full h-auto aspect-[3/4] object-cover bg-slate-900"
+                                />
+                                <canvas ref={canvasRef} className="hidden" />
+                                
+                                <div className="absolute bottom-6 left-0 right-0 flex justify-center">
+                                    <button
+                                        type="button"
+                                        onClick={captureImage}
+                                        className="w-16 h-16 bg-white rounded-full border-4 border-slate-300 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+                                    >
+                                        <div className="w-12 h-12 bg-white rounded-full border border-slate-200 shadow-sm" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                 </form>
             </div>

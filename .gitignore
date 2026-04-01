@@ -26,3 +26,5 @@ dist-ssr
 .env
 frontend/.env
 backend/.env
+backend/media
+backend/staticfiles

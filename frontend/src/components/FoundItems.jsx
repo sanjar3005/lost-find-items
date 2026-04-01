@@ -27,54 +27,41 @@ export default function FoundItems() {
 
 
     return (
-        <div className="max-w-85/100 mx-auto">
-            <div className='flex justify-between my-8'>
-                <h1 className='text-3xl font-bold'>Topib olingan buyumlar</h1>
+        <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
+            <div className='flex justify-between items-end my-5 sm:my-8 gap-3'>
+                <h1 className='text-xl sm:text-2xl lg:text-3xl font-bold'>Topib olingan buyumlar</h1>
                 <button
                     onClick={() => navigate('/items?status=FOUND')}
-                    className='hover:text-[#1e88e5] cursor-pointer underline underline-offset-10 decoration-blue-600 pt-2'
+                    className='hover:text-[#1e88e5] cursor-pointer underline underline-offset-4 sm:underline-offset-8 decoration-blue-600 text-sm sm:text-base pb-1'
                 >
                     Ko'proq
                 </button>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-7 justify-between">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
                 {items.map((item) => {
-                    // 1. Safely extract the first image from the array
-                    // (Note: Change '.image' to '.url' or '.file' if your Django serializer uses a different key inside the object)
                     const firstImageObj = item.images && item.images.length > 0 ? item.images[0] : null;
                     let imageUrl = firstImageObj ? firstImageObj.image : null;
 
-                    // 2. Glue the backend URL to the image if it's a relative path
                     if (imageUrl && !imageUrl.startsWith('http')) {
                         imageUrl = `${BACKEND_URL}${imageUrl}`;
                     }
 
                     return (
-                        <div className="flex justify-center" key={item.id}>
-                            <HomeCart
-                                // Pass the exact fields from your JSON
-                                date={item.date_lost_or_found || "Noma'lum"}
-                                title={item.title}
-                                author={item.owner_name}
-
-                                // Optional: If your Homeitem has a badge for status or location, pass them too!
-                                status={item.status}
-                                location={item.location_address}
-
-                                // The safely extracted thumbnail
-                                image={imageUrl}
-
-                                // Fallback to null since the JSON doesn't include an author profile picture
-                                authorImage={item.owner_picture || null}
-
-                                // Navigate to the specific item page
-                                onDetails={() => navigate(`/items/${item.id}`)}
-                                onMap={() => navigate(`/items?focus=${item.id}&view=map`)}
-                                itemId={item.id}
-                                initialSaved={item.is_saved}
-                            />
-                        </div>
+                        <HomeCart
+                            key={item.id}
+                            date={item.date_lost_or_found || "Noma'lum"}
+                            title={item.title}
+                            author={item.owner_name}
+                            status={item.status}
+                            location={item.location_address}
+                            image={imageUrl}
+                            authorImage={item.owner_picture || null}
+                            onDetails={() => navigate(`/items/${item.id}`)}
+                            onMap={() => navigate(`/items?focus=${item.id}&view=map`)}
+                            itemId={item.id}
+                            initialSaved={item.is_saved}
+                        />
                     );
                 })}
             </div>

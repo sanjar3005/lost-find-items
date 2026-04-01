@@ -8,8 +8,8 @@ const BACKEND_URL = 'http://127.0.0.1:8000';
 
 const CardItem = ({ image, userImage, name, location, onClick, isSaved, onToggleSaved }) => {
   return (
-    <div onClick={onClick} className="bg-[#E9E9E9] rounded-[24px] p-4 lg:p-5 flex flex-col gap-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
-      <div className="w-full aspect-[4/3] rounded-[16px] overflow-hidden bg-white relative">
+    <div onClick={onClick} className="bg-[#E9E9E9] rounded-[18px] sm:rounded-[24px] p-3 sm:p-4 lg:p-5 flex flex-col gap-3 sm:gap-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
+      <div className="w-full aspect-[4/3] rounded-[12px] sm:rounded-[16px] overflow-hidden bg-white relative">
         <img src={image} alt="Product" className="w-full h-full object-cover" />
         <button
           onClick={onToggleSaved}
@@ -20,15 +20,15 @@ const CardItem = ({ image, userImage, name, location, onClick, isSaved, onToggle
         </button>
       </div>
 
-      <div className="flex items-center gap-3 px-1">
-        <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-[12px] overflow-hidden bg-black shrink-0">
+      <div className="flex items-center gap-2.5 sm:gap-3 px-1">
+        <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-[10px] sm:rounded-[12px] overflow-hidden bg-black shrink-0">
           <img src={userImage} alt={name} className="w-full h-full object-cover" />
         </div>
         <div className="flex flex-col">
-          <span className="text-[#0A2342] font-bold text-base lg:text-lg leading-tight">
+          <span className="text-[#0A2342] font-bold text-sm sm:text-base lg:text-lg leading-tight">
             {name}
           </span>
-          <span className="text-[#8E8E93] text-sm lg:text-base font-medium">
+          <span className="text-[#8E8E93] text-xs sm:text-sm lg:text-base font-medium">
             {location}
           </span>
         </div>
@@ -72,25 +72,25 @@ const LostItems = () => {
   };
 
   return (
-    <div className="max-w-91/100 w-full mx-auto p-10 lg:px-9 px-2">
-      <div className="flex justify-between items-end mb-8">
+    <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-5 sm:py-8 lg:py-10">
+      <div className="flex justify-between items-end mb-5 sm:mb-8 gap-3">
         <div>
-          <h2 className="text-[#0a1d37] text-2xl lg:text-4xl font-bold leading-tight">
+          <h2 className="text-[#0a1d37] text-xl sm:text-2xl lg:text-4xl font-bold leading-tight">
             Yo'qolgan buyumlar
           </h2>
-          <p className="text-gray-500 mt-1 text-xs md:text-base font-medium">
+          <p className="text-gray-500 mt-1 text-xs sm:text-sm md:text-base font-medium">
             Bu yerda siz yo'qolgan narsalarni ko'rishingiz mumkin
           </p>
         </div>
         <button
           onClick={() => navigate('/items?status=LOST')}
-          className="hover:text-[#1e88e5] underline underline-offset-10 decoration-blue-600 cursor-pointer text-sm md:text-base border-b-2 border-[#1e88e5] pb-5 whitespace-nowrap lg:mb-4"
+          className="hover:text-[#1e88e5] underline underline-offset-4 sm:underline-offset-8 decoration-blue-600 cursor-pointer text-sm md:text-base border-b border-[#1e88e5] pb-1 whitespace-nowrap"
         >
           Ko'proq
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 lg:gap-6">
         {items.map((item) => {
           const firstImage = item.images?.[0]?.image;
           const mainImage = firstImage
