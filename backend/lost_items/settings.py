@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-p653f*fe_76m@bop7nb_3335lbm(izf)^u75)f*j4l^%-%3drd
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "newuzb.uz"]
 
 
 AUTH_USER_MODEL = 'users.User'
@@ -97,6 +97,7 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # If using Vite
     "http://127.0.0.1:5173",
+    "https://newuzb.uz"  # Your production frontend URL,
 ]
 
 # If you want to temporarily allow everything while debugging, 
