@@ -1,4 +1,4 @@
-from celery import shared_task
+ÿþï»¿from celery import shared_task
 from .models import Item, ItemImage, Category, Color
 
 @shared_task
@@ -24,7 +24,7 @@ def process_item_images(item_id):
             for noun in nouns:
                 print(f"Processing noun: {noun}")
                 if noun.strip(): 
-                    noun_clean = noun.capitalize() 
+                    noun_clean = noun.capitalize(
 
                     cat = Category.objects.filter(name__iexact=noun_clean).first()
                     
@@ -44,7 +44,7 @@ def process_item_images(item_id):
             
             for label in labels_with_colors:
                 parts = label.split()
-                if len(parts) > 1:
+                if len(parts> 1:
                     color_name = parts[0].capitalize()
                     color_obj, _ = Color.objects.get_or_create(name=color_name)
                     item.colors.add(color_obj)
@@ -56,3 +56,4 @@ def process_item_images(item_id):
 
     except Exception as e:
         return f"Error: {str(e)}"
+
