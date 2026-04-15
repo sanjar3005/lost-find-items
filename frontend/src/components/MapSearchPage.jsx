@@ -56,6 +56,7 @@ export default function MapSearchPage() {
     // States
     const [items, setItems] = useState([]);
     const [categories, setCategories] = useState([]);
+    const [availableColors, setAvailableColors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [viewMode, setViewMode] = useState('list'); // 'map' | 'list'
 
@@ -66,6 +67,7 @@ export default function MapSearchPage() {
     const [status, setStatus] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+    const [selectedColors, setSelectedColors] = useState([]);
 
     const [showMobileFilters, setShowMobileFilters] = useState(false);
     const [focusedItemId, setFocusedItemId] = useState(null);
@@ -76,7 +78,7 @@ export default function MapSearchPage() {
     const ITEMS_PER_PAGE = 12;
 
     // Count active filters for badge
-    const activeFilterCount = [category, status, startDate, endDate].filter(Boolean).length;
+    const activeFilterCount = [category, status, startDate, endDate].filter(Boolean).length + (selectedColors.length > 0 ? 1 : 0);
 
     // Initial load
     useEffect(() => {
@@ -93,15 +95,19 @@ export default function MapSearchPage() {
         setFocusedItemId(focusQuery || null);
         setViewMode(viewQuery === 'map' ? 'map' : 'list');
 
-        const fetchCategories = async () => {
+        const fetchCategoriesAndColors = async () => {
             try {
-                const res = await api.get('/api/categories/');
-                setCategories(res.data.results || res.data);
+                const [catRes, colRes] = await Promise.all([
+                    api.get('/api/categories/'),
+                    api.get('/api/colors/')
+                ]);
+                setCategories(catRes.data.results || catRes.data);
+                setAvailableColors(colRes.data.results || colRes.data);
             } catch (err) {
-                console.error("Failed to load categories:", err);
+                console.error("Failed to load filters:", err);
             }
         };
-        fetchCategories();
+        fetchCategoriesAndColors();
     }, [location.search]);
 
     // Load items
@@ -114,6 +120,7 @@ export default function MapSearchPage() {
             if (status) queryParams.push(`status=${status}`);
             if (startDate) queryParams.push(`start_date=${startDate}`);
             if (endDate) queryParams.push(`end_date=${endDate}`);
+            if (selectedColors.length > 0) queryParams.push(`colors=${selectedColors.join(',')}`);
             const queryString = `?${queryParams.join('&')}`;
             const res = await api.get(`/api/items/${queryString}`);
             setItems(res.data.results || res.data);
@@ -128,7 +135,7 @@ export default function MapSearchPage() {
     useEffect(() => {
         fetchItems();
         // eslint-disable-next-line
-    }, [search, category, status, startDate, endDate]);
+    }, [search, category, status, startDate, endDate, selectedColors]);
 
     const handleSearchSubmit = (e) => {
         e.preventDefault();
@@ -150,6 +157,7 @@ export default function MapSearchPage() {
         setStatus('');
         setStartDate('');
         setEndDate('');
+        setSelectedColors([]);
         setCurrentPage(1);
         setShowMobileFilters(false);
     };
@@ -237,6 +245,33 @@ export default function MapSearchPage() {
                         <option key={c.id} value={c.id}>{capitalizeFirst(c.name)}</option>
                     ))}
                 </select>
+            </div>
+
+            {/* Colors */}
+            <div className="mb-4 sm:mb-5">
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Ranglar</label>
+                {availableColors.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                        {availableColors.map(c => {
+                            const isSelected = selectedColors.includes(c.name);
+                            return (
+                                <button
+                                    key={c.id}
+                                    onClick={() => {
+                                        setSelectedColors(prev => 
+                                            isSelected ? prev.filter(color => color !== c.name) : [...prev, c.name]
+                                        );
+                                    }}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${isSelected ? 'bg-[#1E85FF] text-white border-[#1E85FF] shadow-sm' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'}`}
+                                >
+                                    {c.name}
+                                </button>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <p className="text-xs text-slate-400 font-medium italic">Hali ranglar qo'shilmagan.</p>
+                )}
             </div>
 
             {/* Date Range */}

@@ -1,5 +1,15 @@
 from rest_framework import serializers
-from .models import Item, ItemImage, Category
+from .models import Item, ItemImage, Category, Color
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['id', 'name']
+
+class ColorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Color
+        fields = ['id', 'name', 'hex_code']
 
 class ItemImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -8,6 +18,8 @@ class ItemImageSerializer(serializers.ModelSerializer):
 
 class ItemSerializer(serializers.ModelSerializer):
     images = ItemImageSerializer(many=True, read_only=True)
+    categories = CategorySerializer(many=True, read_only=True)
+    colors = ColorSerializer(many=True, read_only=True)
     uploaded_images = serializers.ListField(
         child=serializers.ImageField(allow_empty_file=False, use_url=False),
         write_only=True,
@@ -21,13 +33,13 @@ class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         fields = [
-            'id', 'title', 'description', 'category', 'user', 'owner_name',
+            'id', 'title', 'description', 'category', 'categories', 'colors', 'user', 'owner_name',
             'date_lost_or_found', 'contact_info', 'latitude', 'longitude',
             'location_address', 'is_resolved', 'status', 'images', 
             'uploaded_images', 'owner_picture', 'is_saved', 'created_at', 'views_count',
             'ai_labels', 'is_processed' # Add these new fields here
         ]
-        read_only_fields = ['user', 'ai_labels', 'is_processed']
+        read_only_fields = ['user', 'ai_labels', 'is_processed', 'categories', 'colors']
 
     def create(self, validated_data):
         uploaded_images = validated_data.pop('uploaded_images', [])
@@ -57,8 +69,3 @@ class ItemSerializer(serializers.ModelSerializer):
         if not request or not request.user or not request.user.is_authenticated:
             return False
         return obj.saved_by.filter(user=request.user).exists()
-
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = ['id', 'name']

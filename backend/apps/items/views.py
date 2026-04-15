@@ -6,11 +6,16 @@ from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework import permissions
-from .models import Item, Category, SavedItem
-from .serializers import ItemSerializer,CategorySerializer
+from .models import Item, Category, SavedItem, Color
+from .serializers import ItemSerializer,CategorySerializer, ColorSerializer
 from .permissions import IsOwnerOrReadOnly
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
+class ColorViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Color.objects.all().order_by('name')
+    serializer_class = ColorSerializer
+    permission_classes = [permissions.AllowAny]
 
 class ItemViewSet(viewsets.ModelViewSet):
     serializer_class = ItemSerializer
@@ -39,12 +44,18 @@ class ItemViewSet(viewsets.ModelViewSet):
         is_resolved = self.request.query_params.get('is_resolved')
         saved = self.request.query_params.get('saved')
         include_resolved = self.request.query_params.get('include_resolved')
+        colors = self.request.query_params.get('colors')
 
         if self.action == 'list' and include_resolved != 'true':
             qs = qs.filter(is_resolved=False)
 
         if search:
             qs = qs.filter(Q(title__icontains=search) | Q(description__icontains=search) | Q(ai_labels__icontains=search))
+            
+        if colors:
+            color_names = [c.strip().lower() for c in colors.split(',')]
+            qs = qs.filter(colors__name__iregex=r'(' + '|'.join(color_names) + ')')
+
         if category:
             try:
                 # categories are typically integers, but if they pass ID, we fetch name

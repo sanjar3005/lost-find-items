@@ -7,6 +7,13 @@ class Category(BaseModel, models.Model):
 
     def __str__(self):
         return self.name
+
+class Color(BaseModel, models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    hex_code = models.CharField(max_length=7, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
     
 class ItemStatus(models.TextChoices):
     LOST = 'LOST', 'Lost'
@@ -32,7 +39,9 @@ class Item(BaseModel, models.Model):
 
     ai_labels = models.TextField(blank=True, null=True)
     is_processed = models.BooleanField(default=False)
-
+    
+    categories = models.ManyToManyField(Category, related_name='items_m2m', blank=True)
+    colors = models.ManyToManyField(Color, related_name='items', blank=True)
 
     def __str__(self):
         return f"{self.title} - {self.user.first_name}"
