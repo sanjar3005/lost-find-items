@@ -2,7 +2,7 @@ import axios from "axios";
 
 // 1. Create the instance
 const api = axios.create({
-  baseURL: "http://127.0.0.1:8000/", // Adjust to your backend URL
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/", // Adjust to your backend URL
 });
 
 // 2. Request Interceptor: Attach Token
