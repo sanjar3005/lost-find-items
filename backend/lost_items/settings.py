@@ -97,7 +97,7 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # If using Vite
     "http://127.0.0.1:5173",
-    "https://newuzb.uz"  # Your production frontend URL,
+    "https://topilmalar.polito.uz"  # Your production frontend URL,
 ]
 
 # If you want to temporarily allow everything while debugging, 
@@ -109,7 +109,7 @@ ROOT_URLCONF = 'lost_items.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR.parent / 'frontend' / 'dist'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -119,6 +119,10 @@ TEMPLATES = [
             ],
         },
     },
+]
+
+STATICFILES_DIRS = [
+    BASE_DIR.parent / 'frontend' / 'dist',
 ]
 
 WSGI_APPLICATION = 'lost_items.wsgi.application'
