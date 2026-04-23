@@ -43,7 +43,8 @@ api.interceptors.response.use(
         const refreshToken = localStorage.getItem("refresh");
         
         // Call backend to get new access token
-        const response = await axios.post("http://127.0.0.1:5173/auth/refresh/", {
+        const baseURL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/";
+        const response = await axios.post(`${baseURL}auth/refresh/`, {
           refresh: refreshToken,
         });
 

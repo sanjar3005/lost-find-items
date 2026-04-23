@@ -97,7 +97,9 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # If using Vite
     "http://127.0.0.1:5173",
-    "https://topilmalar.polito.uz"  # Your production frontend URL,
+    "https://topilmalar.polito.uz",  # Your production frontend URL
+    "https://www.topilmalar.polito.uz",  # www variant
+    "http://195.158.3.42",  # Backend IP (for local testing)
 ]
 
 # If you want to temporarily allow everything while debugging, 
