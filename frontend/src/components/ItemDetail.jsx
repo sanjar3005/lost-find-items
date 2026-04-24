@@ -424,59 +424,6 @@ export default function ItemDetail() {
       </div>
     </div>
   );
-
-            <div className='flex justify-between  py-auto items-end mb-3'>
-              <h1 className=" flex text-3xl pb-3 md:text-4xl font-extrabold text-[#0F172A] font-sans leading-tight ">
-                {item.title}
-                
-              </h1>
-              <div className="flex gap-3 mb-3 shrink-0 max-h-8">
-                  <div className="flex items-center gap-2 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-sm font-semibold">
-                    <Clock size={16} /> Sana: {item.date_lost_or_found ? formatDateUz(item.date_lost_or_found) : "Noma'lum"}
-                  </div>
-                  <button
-                    onClick={handleToggleSaved}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold border transition-colors ${isSaved ? 'bg-red-50 text-red-600 border-red-100' : 'bg-white text-slate-600 border-slate-200 hover:border-red-200 hover:text-red-500'}`}
-                  >
-                    <Heart size={16} className={isSaved ? 'fill-current' : ''} />
-                    {isSaved ? "Saqlangan" : "Saqlash"}
-                  </button>
-                </div>
-            </div>
-
-            
-
-            {/* Description */}
-            <div className="mb-3">
-              <p className="text-slate-600 leading-relaxed text-base bg-slate-50 p-3 rounded-xl border border-slate-100">
-                <span className="font-bold block mb-1">Batafsil ma'lumot:</span> 
-                {item.description || <span className="text-slate-400 italic">Qo'shimcha ma'lumot kiritilmagan</span>}
-              </p>
-            </div>
-
-            {/* Profile Card */}
-            <div className="bg-[#F8FAFC] rounded-2xl p-4 mb-5 border border-slate-100">
-              <h3 className="text-sm font-bold text-[#0F172A] mb-3">
-                {item.status === 'LOST' ? "Yo'qotgan shaxsning profili" : "Topib olgan shaxsning profili"}
-              </h3>
-              <div className="flex items-center gap-4 mb-4">
-                <img
-                  src={getImageUrl(item.owner_picture)}
-                  alt={item.owner_name}
-                  className="w-14 h-14 rounded-2xl object-cover border border-slate-200"
-                />
-                <div>
-                  <h4 className="font-bold text-[#0F172A] text-lg">{item.owner_name}</h4>
-                  <p className="text-slate-400 text-sm">{item.location_address || "Manzil noma'lum"}</p>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                {/* Changed to an <a> tag so it actually dials the phone! */}
-                {item.contact_info ? (
-                  <a
-                    href={`tel:${item.contact_info}`}
-                    className="flex-1 bg-white border border-slate-200 hover:border-[#3B82F6] hover:text-[#3B82F6] text-slate-700 py-2.5 rounded-xl font-semibold transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2"
-                  >
                     <Phone size={18} /> {item.contact_info}
                   </a>
                 ) : (
@@ -536,4 +483,4 @@ export default function ItemDetail() {
       </div>
     </div>
   );
-// End of file
+}
