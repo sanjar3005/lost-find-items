@@ -52,11 +52,17 @@ const HomeCart = ({ date, title, author, authorImage, image, onDetails, onMap, i
         </button>
         
         {/* Kitob rasmi foni */}
-        <img 
-          src={image || 'https://via.placeholder.com/400x300?text=No+Image'} 
-          alt={title} 
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        />
+        {image ? (
+          <img 
+            src={image} 
+            alt={title} 
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-[#e4e9f1] text-[#5a7ca9] text-base sm:text-lg font-semibold">
+            Rasm yo'q
+          </div>
+        )}
       </div>
 
       {/* CONTENT SECTION */}

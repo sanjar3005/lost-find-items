@@ -95,7 +95,7 @@ const LostItems = () => {
           const firstImage = item.images?.[0]?.image;
           const mainImage = firstImage
             ? (firstImage.startsWith('http') ? firstImage : `${BACKEND_URL}${firstImage}`)
-            : 'https://via.placeholder.com/500x350?text=No+Image';
+            : undefined;
 
           const ownerImage = item.owner_picture
             ? (item.owner_picture.startsWith('http') ? item.owner_picture : `${BACKEND_URL}${item.owner_picture}`)
@@ -104,7 +104,7 @@ const LostItems = () => {
           return (
             <CardItem
               key={item.id}
-              image={mainImage}
+              image={mainImage || undefined}
               userImage={ownerImage}
               name={item.owner_name || 'Foydalanuvchi'}
               location={item.location_address || 'Manzil noma\'lum'}
