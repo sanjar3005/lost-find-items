@@ -7,6 +7,7 @@ import api from '../service/api';
 // 1. onDetails propini qo'shdik
 const HomeCart = ({ date, title, author, authorImage, image, onDetails, onMap, itemId, initialSaved = false, onSavedChange }) => {
   const { user } = useAuth();
+  const noImagePlaceholder = false; // Default value for noImagePlaceholder
   const navigate = useNavigate();
   const [saved, setSaved] = useState(Boolean(initialSaved));
 
