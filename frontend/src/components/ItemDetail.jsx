@@ -168,7 +168,7 @@ export default function ItemDetail() {
         {/* Responsive layout: On mobile, details first, map second. On desktop, side by side. */}
         <div className={`grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16`}> 
           {/* Details always first on all screens */}
-          <div className="w-full order-1"> 
+          <div className={`w-full ${imageArray.length > 0 ? 'order-1 lg:order-2' : 'order-1'}`}> 
             <div className='flex flex-wrap gap-2 sm:gap-4 justify-between items-end mb-3'>
               <h1 className="flex-1 min-w-0 break-words text-2xl xs:text-3xl pb-2 md:text-4xl font-extrabold text-[#0F172A] font-sans leading-tight">
                 {item.title}
