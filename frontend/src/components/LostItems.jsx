@@ -95,7 +95,7 @@ const LostItems = () => {
           const firstImage = item.images?.[0]?.image;
           const mainImage = firstImage
             ? (firstImage.startsWith('http') ? firstImage : `${BACKEND_URL}${firstImage}`)
-            : undefined;
+            : null;
 
           const ownerImage = item.owner_picture
             ? (item.owner_picture.startsWith('http') ? item.owner_picture : `${BACKEND_URL}${item.owner_picture}`)
@@ -104,13 +104,14 @@ const LostItems = () => {
           return (
             <CardItem
               key={item.id}
-              image={mainImage || undefined}
+              image={mainImage}
               userImage={ownerImage}
               name={item.owner_name || 'Foydalanuvchi'}
               location={item.location_address || 'Manzil noma\'lum'}
               onClick={() => navigate(`/items/${item.id}`)}
               isSaved={item.is_saved}
               onToggleSaved={(e) => handleToggleSaved(e, item.id)}
+              noImagePlaceholder={mainImage === null}
             />
           );
         })}
