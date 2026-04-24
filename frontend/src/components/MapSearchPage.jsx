@@ -60,17 +60,24 @@ export default function MapSearchPage() {
     const [loading, setLoading] = useState(true);
     const [viewMode, setViewMode] = useState('list'); // 'map' | 'list'
 
+    const searchParams = new URLSearchParams(location.search);
+    const initialCategory = searchParams.get('category') || '';
+    const initialSearch = searchParams.get('search') || '';
+    const initialStatus = searchParams.get('status') || '';
+    const initialFocus = searchParams.get('focus') || null;
+    const initialView = searchParams.get('view') === 'map' ? 'map' : 'list';
+
     // Filters
-    const [searchInput, setSearchInput] = useState('');
-    const [search, setSearch] = useState('');
-    const [category, setCategory] = useState('');
-    const [status, setStatus] = useState('');
+    const [searchInput, setSearchInput] = useState(initialSearch);
+    const [search, setSearch] = useState(initialSearch);
+    const [category, setCategory] = useState(initialCategory);
+    const [status, setStatus] = useState(initialStatus);
     const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
+    const [endDate, setEndDate] = useState(''); 
     const [selectedColors, setSelectedColors] = useState([]);
 
     const [showMobileFilters, setShowMobileFilters] = useState(false);
-    const [focusedItemId, setFocusedItemId] = useState(null);
+    const [focusedItemId, setFocusedItemId] = useState(initialFocus);
     const markerRefs = useRef({});
 
     // Pagination
@@ -80,21 +87,8 @@ export default function MapSearchPage() {
     // Count active filters for badge
     const activeFilterCount = [category, status, startDate, endDate].filter(Boolean).length + (selectedColors.length > 0 ? 1 : 0);
 
-    // Initial load
+    // Initial load for categories & colors
     useEffect(() => {
-        const queryParams = new URLSearchParams(location.search);
-        const searchQuery = queryParams.get('search');
-        const categoryQuery = queryParams.get('category');
-        const statusQuery = queryParams.get('status');
-        const focusQuery = queryParams.get('focus');
-        const viewQuery = queryParams.get('view');
-        setSearchInput(searchQuery || '');
-        setSearch(searchQuery || '');
-        setCategory(categoryQuery || '');
-        setStatus(statusQuery || '');
-        setFocusedItemId(focusQuery || null);
-        setViewMode(viewQuery === 'map' ? 'map' : 'list');
-
         const fetchCategoriesAndColors = async () => {
             try {
                 const [catRes, colRes] = await Promise.all([
@@ -108,6 +102,25 @@ export default function MapSearchPage() {
             }
         };
         fetchCategoriesAndColors();
+    }, []);
+
+    // Sync state if location.search changes from outside
+    useEffect(() => {
+        const queryParams = new URLSearchParams(location.search);
+        const searchQuery = queryParams.get('search');
+        const categoryQuery = queryParams.get('category');
+        const statusQuery = queryParams.get('status');
+        const focusQuery = queryParams.get('focus');
+        const viewQuery = queryParams.get('view');
+        
+        if (searchQuery !== null) {
+            setSearchInput(searchQuery || '');
+            setSearch(searchQuery || '');
+        }
+        if (categoryQuery !== null) setCategory(categoryQuery || '');
+        if (statusQuery !== null) setStatus(statusQuery || '');
+        if (focusQuery !== null) setFocusedItemId(focusQuery);
+        if (viewQuery !== null) setViewMode(viewQuery === 'map' ? 'map' : 'list');
     }, [location.search]);
 
     // Load items
