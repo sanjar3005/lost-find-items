@@ -166,18 +166,21 @@ export default function ItemDetail() {
         </button>
 
         {/* Responsive layout: On mobile, details first, map second. On desktop, side by side. */}
-        <div className={`grid grid-cols-1 ${imageArray.length > 0 ? 'lg:grid-cols-2' : 'lg:grid-cols-2'} gap-10 lg:gap-16`}> 
-          {/* Details always first on mobile */}
-          <div className={`${imageArray.length > 0 ? '' : 'lg:col-span-1 order-2 lg:order-1'} w-full`}> 
-            <div className='flex justify-between py-auto items-end mb-3'>
-              <h1 className="flex text-3xl pb-3 md:text-4xl font-extrabold text-[#0F172A] font-sans leading-tight ">{item.title}</h1>
-              <div className="flex gap-3 mb-3 shrink-0 max-h-8">
-                <div className="flex items-center gap-2 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-sm font-semibold">
+        <div className={`grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16`}> 
+          {/* Details always first on all screens */}
+          <div className="w-full order-1"> 
+            <div className='flex flex-wrap gap-2 sm:gap-4 justify-between items-end mb-3'>
+              <h1 className="flex-1 min-w-0 break-words text-2xl xs:text-3xl pb-2 md:text-4xl font-extrabold text-[#0F172A] font-sans leading-tight">
+                {item.title}
+              </h1>
+              <div className="flex flex-wrap gap-2 mb-2 shrink-0 max-h-16 w-full sm:w-auto">
+                <div className="flex items-center gap-2 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap">
                   <Clock size={16} /> Sana: {item.date_lost_or_found ? formatDateUz(item.date_lost_or_found) : "Noma'lum"}
                 </div>
                 <button
                   onClick={handleToggleSaved}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold border transition-colors ${isSaved ? 'bg-red-50 text-red-600 border-red-100' : 'bg-white text-slate-600 border-slate-200 hover:border-red-200 hover:text-red-500'}`}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold border transition-colors ${isSaved ? 'bg-red-50 text-red-600 border-red-100' : 'bg-white text-slate-600 border-slate-200 hover:border-red-200 hover:text-red-500'}`}
+                  style={{ minWidth: '100px' }}
                 >
                   <Heart size={16} className={isSaved ? 'fill-current' : ''} />
                   {isSaved ? "Saqlangan" : "Saqlash"}
@@ -226,62 +229,62 @@ export default function ItemDetail() {
               </div>
             </div>
           </div>
-          {/* Map or Image on right (on mobile, appears after details) */}
-          {imageArray.length > 0 && (
-            <div className="space-y-4 select-none w-full">
-              {/* Main Image Stage */}
-              <div className="relative aspect-[4/3] w-full bg-slate-100 rounded-3xl overflow-hidden border border-slate-200 shadow-sm group">
-                {imageArray.map((img, index) => (
-                  <img
-                    key={index}
-                    src={img}
-                    alt={`${item.title} rasm ${index + 1}`}
-                    className={`absolute inset-0 w-full h-full object-contain mix-blend-multiply transition-opacity duration-500 ease-in-out ${index === activeImage ? 'opacity-100' : 'opacity-0'}`}
-                  />
-                ))}
-                {/* Only show arrows if there is more than 1 image */}
+          {/* Right column: images (if any), then map always last */}
+          <div className="w-full order-2 flex flex-col gap-6">
+            {imageArray.length > 0 && (
+              <div className="space-y-4 select-none w-full">
+                {/* Main Image Stage */}
+                <div className="relative aspect-[4/3] w-full bg-slate-100 rounded-3xl overflow-hidden border border-slate-200 shadow-sm group">
+                  {imageArray.map((img, index) => (
+                    <img
+                      key={index}
+                      src={img}
+                      alt={`${item.title} rasm ${index + 1}`}
+                      className={`absolute inset-0 w-full h-full object-contain mix-blend-multiply transition-opacity duration-500 ease-in-out ${index === activeImage ? 'opacity-100' : 'opacity-0'}`}
+                    />
+                  ))}
+                  {/* Only show arrows if there is more than 1 image */}
+                  {imageArray.length > 1 && (
+                    <>
+                      <button
+                        onClick={handlePrev}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white text-slate-800 p-3 rounded-full shadow-lg opacity-100 transition-all active:scale-95"
+                      >
+                        <ChevronLeft size={24} />
+                      </button>
+                      <button
+                        onClick={handleNext}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white text-slate-800 p-3 rounded-full shadow-lg opacity-100 transition-all active:scale-95"
+                      >
+                        <ChevronRight size={24} />
+                      </button>
+                    </>
+                  )}
+                </div>
+                {/* Scrollable Thumbnails Strip (Only show if multiple images) */}
                 {imageArray.length > 1 && (
-                  <>
-                    <button
-                      onClick={handlePrev}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white text-slate-800 p-3 rounded-full shadow-lg opacity-100 transition-all active:scale-95"
-                    >
-                      <ChevronLeft size={24} />
-                    </button>
-                    <button
-                      onClick={handleNext}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white text-slate-800 p-3 rounded-full shadow-lg opacity-100 transition-all active:scale-95"
-                    >
-                      <ChevronRight size={24} />
-                    </button>
-                  </>
+                  <div
+                    ref={thumbnailScrollRef}
+                    className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide"
+                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                  >
+                    {imageArray.map((img, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleThumbnailClick(index)}
+                        className={`flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all ${activeImage === index
+                          ? 'border-[#3B82F6] ring-2 ring-blue-100 opacity-100'
+                          : 'border-transparent opacity-60 hover:opacity-100'
+                          }`}
+                      >
+                        <img src={img} alt={`Thumbnail ${index}`} className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
-              {/* Scrollable Thumbnails Strip (Only show if multiple images) */}
-              {imageArray.length > 1 && (
-                <div
-                  ref={thumbnailScrollRef}
-                  className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide"
-                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                >
-                  {imageArray.map((img, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleThumbnailClick(index)}
-                      className={`flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all ${activeImage === index
-                        ? 'border-[#3B82F6] ring-2 ring-blue-100 opacity-100'
-                        : 'border-transparent opacity-60 hover:opacity-100'
-                        }`}
-                    >
-                      <img src={img} alt={`Thumbnail ${index}`} className="w-full h-full object-cover" />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-          {/* Map always last on mobile, right on desktop */}
-          <div className={`${imageArray.length > 0 ? '' : 'lg:col-span-1 order-1 lg:order-2'} w-full`}> 
+            )}
+            {/* Map always last, after images if present */}
             <div>
               <h3 className="text-sm font-bold text-[#0F172A] mb-3">Manzil</h3>
               <div className="w-full h-64 bg-slate-100 rounded-2xl overflow-hidden relative border border-slate-200 z-0">

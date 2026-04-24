@@ -52,11 +52,12 @@ const HomeCart = ({ date, title, author, authorImage, image, onDetails, onMap, i
         </button>
         
         {/* Kitob rasmi foni */}
-        {image ? (
+        {image && typeof image === 'string' && image.trim() !== '' ? (
           <img 
             src={image} 
             alt={title} 
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            onError={e => { e.target.onerror = null; e.target.style.display = 'none'; e.target.parentNode && (e.target.parentNode.innerHTML = `<div class='w-full h-full flex items-center justify-center bg-[#e4e9f1] text-[#5a7ca9] text-base sm:text-lg font-semibold'>Rasm yo'q</div>`); }}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-[#e4e9f1] text-[#5a7ca9] text-base sm:text-lg font-semibold">
