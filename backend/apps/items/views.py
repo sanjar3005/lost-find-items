@@ -54,7 +54,7 @@ class ItemViewSet(viewsets.ModelViewSet):
             
         if colors:
             color_names = [c.strip().lower() for c in colors.split(',')]
-            qs = qs.filter(colors__name__iregex=r'(' + '|'.join(color_names) + ')')
+            qs = qs.filter(colors__name__iregex=r'(' + '|'.join(color_names) + ')').distinct()
 
         if category:
             try:
