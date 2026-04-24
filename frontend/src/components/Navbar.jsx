@@ -95,7 +95,7 @@ export default function Navbar() {
           ) : (
             <div className="flex items-center gap-1.5">
               <Link to="/login" className="px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-100 whitespace-nowrap">Kirish</Link>
-              <Link to="/register" className="px-3 py-2 rounded-lg text-sm font-semibold bg-slate-800 text-white hover:bg-slate-900 whitespace-nowrap">Ro'yxat</Link>
+              <Link to="/register" className="px-3 py-2 rounded-lg text-sm font-semibold bg-slate-800 text-white hover:bg-slate-900 whitespace-nowrap">Ro'yxatdan o'tish</Link>
             </div>
           )}
         </div>
@@ -216,7 +216,7 @@ export default function Navbar() {
                   </Link>
                   <Link to="/register" onClick={closeMobileMenu} className="flex-1">
                     <button className="w-full py-3 rounded-xl font-bold bg-slate-800 text-white hover:bg-slate-900 transition-colors">
-                      Ro'yxat
+                      Ro'yxatdan o'tish
                     </button>
                   </Link>
                 </div>
