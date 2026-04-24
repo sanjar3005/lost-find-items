@@ -9,7 +9,7 @@ export default function Footer() {
             {/* Column 1: Description */}
             <div className="col-span-1 md:col-span-1">
               <p className="text-sm text-slate-500 leading-relaxed max-w-xs">
-                Har qanday yo'qolgan narsangizni salon mumkun!
+                Har qanday yo'qolgan narsangizni topishingiz mumkun!
               </p>
             </div>
 

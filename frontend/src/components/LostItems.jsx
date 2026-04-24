@@ -88,7 +88,7 @@ const LostItems = () => {
         </div>
         <button
           onClick={() => navigate('/items?status=LOST')}
-          className="hover:text-[#1e88e5] underline underline-offset-4 sm:underline-offset-8 decoration-blue-600 cursor-pointer text-sm md:text-base border-b border-[#1e88e5] pb-1 whitespace-nowrap"
+          className="hover:text-[#1e88e5] underline underline-offset-4 sm:underline-offset-8 decoration-blue-600 cursor-pointer text-sm md:text-base pb-1 whitespace-nowrap"
         >
           Ko'proq
         </button>

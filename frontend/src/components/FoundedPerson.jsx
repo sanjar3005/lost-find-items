@@ -51,7 +51,7 @@ const FoundedPerson = () => {
         </div>
         <button
           onClick={() => navigate('/items?status=FOUND')}
-          className="hover:text-[#1e88e5] underline underline-offset-10 decoration-blue-600 text-sm md:text-base border-b-2 border-[#1e88e5] pb-13 lg:pb-3 whitespace-nowrap cursor-pointer md:mb-5"
+          className="hover:text-[#1e88e5] underline underline-offset-4 sm:underline-offset-8 decoration-blue-600 text-sm md:text-base pb-1 whitespace-nowrap cursor-pointer md:mb-5"
         >
           Ko'proq
         </button>

@@ -46,7 +46,7 @@ const UserReview = () => {
       id: 3,
       name: "Ozodbek",
       surname: "Egaberdiyev",
-      feedback: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.",
+      feedback: "Hujjatlarimni tushirib qoldirgandim, shu platforma orqali 2 kunda xavfsiz topib oldim. Katta rahmat yaratuvchilarga!",
       image: "https://media.gettyimages.com/id/1369199360/photo/portrait-of-a-handsome-young-businessman-working-in-office.jpg?s=612x612&w=gi&k=20&c=BFc13n-vhT4GMd0ohRt0PFD3IzJ_Onf6nKDAObgh1CA="
     }
   ];
