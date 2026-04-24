@@ -170,7 +170,7 @@ export default function ItemDetail() {
           
           {/* If images exist, put them in the left column */}
           {imageArray.length > 0 && (
-            <div className="w-full order-2 lg:order-1 flex flex-col gap-6">
+            <div className="w-full order-1 flex flex-col gap-6">
               <div className="space-y-4 select-none w-full">
                 {/* Main Image Stage */}
                 <div className="relative aspect-[4/3] w-full bg-slate-100 rounded-3xl overflow-hidden border border-slate-200 shadow-sm group">
@@ -226,7 +226,7 @@ export default function ItemDetail() {
           )}
 
           {/* Details (and Map if images exist) placed according to condition */}
-          <div className={`w-full flex flex-col gap-6 ${imageArray.length > 0 ? 'order-1 lg:order-2' : 'order-1'}`}> 
+          <div className={`w-full flex flex-col gap-6 ${imageArray.length > 0 ? 'order-2' : 'order-1'}`}> 
             <div>
               <div className='flex flex-wrap gap-2 sm:gap-4 justify-between items-end mb-3'>
                 <h1 className="flex-1 min-w-0 break-words text-2xl xs:text-3xl pb-2 md:text-4xl font-extrabold text-[#0F172A] font-sans leading-tight">
@@ -326,7 +326,7 @@ export default function ItemDetail() {
 
           {/* If no images, Map is on the right column alone */}
           {imageArray.length === 0 && (
-            <div className="w-full order-3 lg:order-2 flex flex-col gap-6">
+            <div className="w-full order-2 flex flex-col gap-6">
               <div>
                 <h3 className="text-sm font-bold text-[#0F172A] mb-3">Manzil</h3>
                 <div className="w-full h-64 bg-slate-100 rounded-2xl overflow-hidden relative border border-slate-200 z-0">
