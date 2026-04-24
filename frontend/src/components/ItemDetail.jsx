@@ -536,4 +536,4 @@ export default function ItemDetail() {
       </div>
     </div>
   );
-}
+// End of file
