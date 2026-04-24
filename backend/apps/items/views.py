@@ -57,13 +57,8 @@ class ItemViewSet(viewsets.ModelViewSet):
             qs = qs.filter(colors__name__iregex=r'(' + '|'.join(color_names) + ')').distinct()
 
         if category:
-            try:
-                # categories are typically integers, but if they pass ID, we fetch name
-                cat_obj = Category.objects.get(id=category)
-                cat_name_capitalized = str(cat_obj.name).capitalize()
-                qs = qs.filter(Q(category_id=category) | Q(ai_labels__icontains=cat_name_capitalized) | Q(ai_labels__icontains=cat_obj.name))
-            except (Category.DoesNotExist, ValueError):
-                qs = qs.filter(category_id=category)
+            # We filter precisely by category_id or categories (M2M) to avoid matching unrelated items 
+            qs = qs.filter(Q(category_id=category) | Q(categories__id=category)).distinct()
         if status:
             qs = qs.filter(status=status)
         if start_date:

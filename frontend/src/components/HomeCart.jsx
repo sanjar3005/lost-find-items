@@ -34,7 +34,7 @@ const HomeCart = ({ date, title, author, authorImage, image, onDetails, onMap, i
     }
   };
   return (
-    <div className="w-full border border-slate-200 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-all duration-300 h-full group relative">
+    <div onClick={onDetails} className="w-full border border-slate-200 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-all duration-300 h-full group relative cursor-pointer">
       {/* Rasm qismi */}
       <div className="relative w-full rounded-lg overflow-hidden bg-slate-50 aspect-[4/3]">
         {/* Sana (Badge) */}
@@ -97,7 +97,7 @@ const HomeCart = ({ date, title, author, authorImage, image, onDetails, onMap, i
 
         {/* 2. ACTION BUTTON */}
         <button 
-          onClick={onDetails}
+          onClick={(e) => { e.stopPropagation(); onDetails(); }}
           className="w-full mt-2 bg-slate-50 border border-slate-200 text-slate-700 py-2 sm:py-2.5 rounded-lg font-bold text-xs sm:text-sm hover:bg-[#1E85FF] hover:border-[#1E85FF] hover:text-white transition-all active:scale-95"
         >
           Batafsil ko'rish
