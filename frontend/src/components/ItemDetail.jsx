@@ -84,7 +84,7 @@ export default function ItemDetail() {
   // Safely extract the image array from the backend response
   const imageArray = item.images && item.images.length > 0
     ? item.images.map(img => getImageUrl(img.image || img.url))
-    : ['https://via.placeholder.com/800x600?text=Rasm+yoq'];
+    : [];
 
   // --- Logic to handle image switching and scrolling ---
   const scrollThumbnail = (index) => {
@@ -156,7 +156,6 @@ export default function ItemDetail() {
   return (
     <div className="bg-white min-h-screen pb-5 pt-3">
       <div className="max-w-[85%] mx-auto">
-
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
@@ -166,72 +165,265 @@ export default function ItemDetail() {
           Orqaga
         </button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
+        {imageArray.length > 0 ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
+            {/* --- LEFT COLUMN: Carousel Gallery --- */}
+            <div className="space-y-4 select-none">
+              {/* Main Image Stage */}
+              <div className="relative aspect-[4/3] w-full bg-slate-100 rounded-3xl overflow-hidden border border-slate-200 shadow-sm group">
+                {/* THE FIX: Map through all images, stack them, and fade opacity */}
+                {imageArray.map((img, index) => (
+                  <img
+                    key={index}
+                    src={img}
+                    alt={`${item.title} rasm ${index + 1}`}
+                    className={`absolute inset-0 w-full h-full object-contain mix-blend-multiply transition-opacity duration-500 ease-in-out ${index === activeImage ? 'opacity-100' : 'opacity-0'}`}
+                  />
+                ))}
 
-          {/* --- LEFT COLUMN: Carousel Gallery --- */}
-          <div className="space-y-4 select-none">
-            {/* Main Image Stage */}
-            <div className="relative aspect-[4/3] w-full bg-slate-100 rounded-3xl overflow-hidden border border-slate-200 shadow-sm group">
+                {/* Only show arrows if there is more than 1 image */}
+                {imageArray.length > 1 && (
+                  <>
+                    <button
+                      onClick={handlePrev}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white text-slate-800 p-3 rounded-full shadow-lg opacity-100 transition-all active:scale-95"
+                    >
+                      <ChevronLeft size={24} />
+                    </button>
+                    <button
+                      onClick={handleNext}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white text-slate-800 p-3 rounded-full shadow-lg opacity-100 transition-all active:scale-95"
+                    >
+                      <ChevronRight size={24} />
+                    </button>
+                  </>
+                )}
+              </div>
 
-              {/* THE FIX: Map through all images, stack them, and fade opacity */}
-              {imageArray.map((img, index) => (
-                <img
-                  key={index}
-                  src={img}
-                  alt={`${item.title} rasm ${index + 1}`}
-                  // absolute inset-0 stacks them perfectly
-                  // transition-opacity duration-500 makes it smooth!
-                  className={`absolute inset-0 w-full h-full object-contain mix-blend-multiply transition-opacity duration-500 ease-in-out ${index === activeImage ? 'opacity-100' : 'opacity-0'
-                    }`}
-                />
-              ))}
-
-              {/* Only show arrows if there is more than 1 image */}
+              {/* Scrollable Thumbnails Strip (Only show if multiple images) */}
               {imageArray.length > 1 && (
-                <>
-                  <button
-                    onClick={handlePrev}
-                    // Added z-10 so the buttons stay clickable above the stacked images
-                    className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white text-slate-800 p-3 rounded-full shadow-lg opacity-100 transition-all active:scale-95"
-                  >
-                    <ChevronLeft size={24} />
-                  </button>
-                  <button
-                    onClick={handleNext}
-                    // Added z-10 here as well
-                    className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white text-slate-800 p-3 rounded-full shadow-lg opacity-100 transition-all active:scale-95"
-                  >
-                    <ChevronRight size={24} />
-                  </button>
-                </>
+                <div
+                  ref={thumbnailScrollRef}
+                  className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide"
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                >
+                  {imageArray.map((img, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleThumbnailClick(index)}
+                      className={`flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all ${activeImage === index
+                        ? 'border-[#3B82F6] ring-2 ring-blue-100 opacity-100'
+                        : 'border-transparent opacity-60 hover:opacity-100'
+                        }`}
+                    >
+                      <img src={img} alt={`Thumbnail ${index}`} className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
-
-            {/* Scrollable Thumbnails Strip (Only show if multiple images) */}
-            {imageArray.length > 1 && (
-              <div
-                ref={thumbnailScrollRef}
-                className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide"
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-              >
-                {imageArray.map((img, index) => (
+            {/* --- RIGHT COLUMN: Details --- */}
+            <div>
+              {/* ...existing code for details and map... */}
+              {/* Details and Map code below remains unchanged */}
+              {/** Details and Map section below **/}
+              {/* ...existing code... */}
+              <div className='flex justify-between  py-auto items-end mb-3'>
+                <h1 className=" flex text-3xl pb-3 md:text-4xl font-extrabold text-[#0F172A] font-sans leading-tight ">
+                  {item.title}
+                </h1>
+                <div className="flex gap-3 mb-3 shrink-0 max-h-8">
+                  <div className="flex items-center gap-2 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-sm font-semibold">
+                    <Clock size={16} /> Sana: {item.date_lost_or_found ? formatDateUz(item.date_lost_or_found) : "Noma'lum"}
+                  </div>
                   <button
-                    key={index}
-                    onClick={() => handleThumbnailClick(index)}
-                    className={`flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all ${activeImage === index
-                      ? 'border-[#3B82F6] ring-2 ring-blue-100 opacity-100'
-                      : 'border-transparent opacity-60 hover:opacity-100'
-                      }`}
+                    onClick={handleToggleSaved}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold border transition-colors ${isSaved ? 'bg-red-50 text-red-600 border-red-100' : 'bg-white text-slate-600 border-slate-200 hover:border-red-200 hover:text-red-500'}`}
                   >
-                    <img src={img} alt={`Thumbnail ${index}`} className="w-full h-full object-cover" />
+                    <Heart size={16} className={isSaved ? 'fill-current' : ''} />
+                    {isSaved ? "Saqlangan" : "Saqlash"}
                   </button>
-                ))}
+                </div>
               </div>
-            )}
+              {/* ...existing code for description, profile, and map... */}
+              {/* ...existing code... */}
+              {/* Description */}
+              <div className="mb-3">
+                <p className="text-slate-600 leading-relaxed text-base bg-slate-50 p-3 rounded-xl border border-slate-100">
+                  <span className="font-bold block mb-1">Batafsil ma'lumot:</span> 
+                  {item.description || <span className="text-slate-400 italic">Qo'shimcha ma'lumot kiritilmagan</span>}
+                </p>
+              </div>
+              {/* Profile Card */}
+              <div className="bg-[#F8FAFC] rounded-2xl p-4 mb-5 border border-slate-100">
+                <h3 className="text-sm font-bold text-[#0F172A] mb-3">
+                  {item.status === 'LOST' ? "Yo'qotgan shaxsning profili" : "Topib olgan shaxsning profili"}
+                </h3>
+                <div className="flex items-center gap-4 mb-4">
+                  <img
+                    src={getImageUrl(item.owner_picture)}
+                    alt={item.owner_name}
+                    className="w-14 h-14 rounded-2xl object-cover border border-slate-200"
+                  />
+                  <div>
+                    <h4 className="font-bold text-[#0F172A] text-lg">{item.owner_name}</h4>
+                    <p className="text-slate-400 text-sm">{item.location_address || "Manzil noma'lum"}</p>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  {/* Changed to an <a> tag so it actually dials the phone! */}
+                  {item.contact_info ? (
+                    <a
+                      href={`tel:${item.contact_info}`}
+                      className="flex-1 bg-white border border-slate-200 hover:border-[#3B82F6] hover:text-[#3B82F6] text-slate-700 py-2.5 rounded-xl font-semibold transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2"
+                    >
+                      <Phone size={18} /> {item.contact_info}
+                    </a>
+                  ) : (
+                    <div className="flex-1 bg-slate-50 border border-slate-200 text-slate-400 py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 cursor-not-allowed cursor-not-allowed">
+                      <Phone size={18} /> Raqam yo'q
+                    </div>
+                  )}
+                  <button className="flex-1 bg-white border border-slate-200 hover:border-[#3B82F6] hover:text-[#3B82F6] text-slate-700 py-2.5 rounded-xl font-semibold transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2">
+                    <MessageCircle size={18} /> Xabar
+                  </button>
+                </div>
+              </div>
+              {/* Map Section */}
+              <div>
+                <h3 className="text-sm font-bold text-[#0F172A] mb-3">Manzil</h3>
+                <div className="w-full h-64 bg-slate-100 rounded-2xl overflow-hidden relative border border-slate-200 z-0">
+                  {(item.latitude && item.longitude) ? (
+                    <MapContainer
+                      center={[item.latitude, item.longitude]}
+                      zoom={14}
+                      scrollWheelZoom={true}
+                      style={{ height: "100%", width: "100%", zIndex: 1 }}
+                    >
+                      <TileLayer
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      />
+                      <Marker position={[item.latitude, item.longitude]} />
+                    </MapContainer>
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 bg-slate-50">
+                      <MapPin size={40} className="mb-2 opacity-50" />
+                      <p>Xarita ma'lumotlari kiritilmagan</p>
+                    </div>
+                  )}
+                  {item.location_address && (
+                    <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-sm p-3 rounded-xl text-sm font-bold text-slate-800 shadow-lg z-[1000] pointer-events-none border border-slate-100 flex items-center gap-2">
+                      <MapPin size={18} className="text-[#3B82F6]" />
+                      {item.location_address}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
-
-          {/* --- RIGHT COLUMN: Details --- */}
-          <div>
+        ) : (
+          // No images: show details on left, map on right
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
+            {/* Details on left */}
+            <div className="lg:col-span-1 order-2 lg:order-1">
+              <div className='flex justify-between  py-auto items-end mb-3'>
+                <h1 className=" flex text-3xl pb-3 md:text-4xl font-extrabold text-[#0F172A] font-sans leading-tight ">
+                  {item.title}
+                </h1>
+                <div className="flex gap-3 mb-3 shrink-0 max-h-8">
+                  <div className="flex items-center gap-2 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-sm font-semibold">
+                    <Clock size={16} /> Sana: {item.date_lost_or_found ? formatDateUz(item.date_lost_or_found) : "Noma'lum"}
+                  </div>
+                  <button
+                    onClick={handleToggleSaved}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold border transition-colors ${isSaved ? 'bg-red-50 text-red-600 border-red-100' : 'bg-white text-slate-600 border-slate-200 hover:border-red-200 hover:text-red-500'}`}
+                  >
+                    <Heart size={16} className={isSaved ? 'fill-current' : ''} />
+                    {isSaved ? "Saqlangan" : "Saqlash"}
+                  </button>
+                </div>
+              </div>
+              {/* Description */}
+              <div className="mb-3">
+                <p className="text-slate-600 leading-relaxed text-base bg-slate-50 p-3 rounded-xl border border-slate-100">
+                  <span className="font-bold block mb-1">Batafsil ma'lumot:</span> 
+                  {item.description || <span className="text-slate-400 italic">Qo'shimcha ma'lumot kiritilmagan</span>}
+                </p>
+              </div>
+              {/* Profile Card */}
+              <div className="bg-[#F8FAFC] rounded-2xl p-4 mb-5 border border-slate-100">
+                <h3 className="text-sm font-bold text-[#0F172A] mb-3">
+                  {item.status === 'LOST' ? "Yo'qotgan shaxsning profili" : "Topib olgan shaxsning profili"}
+                </h3>
+                <div className="flex items-center gap-4 mb-4">
+                  <img
+                    src={getImageUrl(item.owner_picture)}
+                    alt={item.owner_name}
+                    className="w-14 h-14 rounded-2xl object-cover border border-slate-200"
+                  />
+                  <div>
+                    <h4 className="font-bold text-[#0F172A] text-lg">{item.owner_name}</h4>
+                    <p className="text-slate-400 text-sm">{item.location_address || "Manzil noma'lum"}</p>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  {item.contact_info ? (
+                    <a
+                      href={`tel:${item.contact_info}`}
+                      className="flex-1 bg-white border border-slate-200 hover:border-[#3B82F6] hover:text-[#3B82F6] text-slate-700 py-2.5 rounded-xl font-semibold transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2"
+                    >
+                      <Phone size={18} /> {item.contact_info}
+                    </a>
+                  ) : (
+                    <div className="flex-1 bg-slate-50 border border-slate-200 text-slate-400 py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 cursor-not-allowed cursor-not-allowed">
+                      <Phone size={18} /> Raqam yo'q
+                    </div>
+                  )}
+                  <button className="flex-1 bg-white border border-slate-200 hover:border-[#3B82F6] hover:text-[#3B82F6] text-slate-700 py-2.5 rounded-xl font-semibold transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2">
+                    <MessageCircle size={18} /> Xabar
+                  </button>
+                </div>
+              </div>
+            </div>
+            {/* Map on right */}
+            <div className="lg:col-span-1 order-1 lg:order-2">
+              <div>
+                <h3 className="text-sm font-bold text-[#0F172A] mb-3">Manzil</h3>
+                <div className="w-full h-64 bg-slate-100 rounded-2xl overflow-hidden relative border border-slate-200 z-0">
+                  {(item.latitude && item.longitude) ? (
+                    <MapContainer
+                      center={[item.latitude, item.longitude]}
+                      zoom={14}
+                      scrollWheelZoom={true}
+                      style={{ height: "100%", width: "100%", zIndex: 1 }}
+                    >
+                      <TileLayer
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      />
+                      <Marker position={[item.latitude, item.longitude]} />
+                    </MapContainer>
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 bg-slate-50">
+                      <MapPin size={40} className="mb-2 opacity-50" />
+                      <p>Xarita ma'lumotlari kiritilmagan</p>
+                    </div>
+                  )}
+                  {item.location_address && (
+                    <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-sm p-3 rounded-xl text-sm font-bold text-slate-800 shadow-lg z-[1000] pointer-events-none border border-slate-100 flex items-center gap-2">
+                      <MapPin size={18} className="text-[#3B82F6]" />
+                      {item.location_address}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 
             <div className='flex justify-between  py-auto items-end mb-3'>
               <h1 className=" flex text-3xl pb-3 md:text-4xl font-extrabold text-[#0F172A] font-sans leading-tight ">

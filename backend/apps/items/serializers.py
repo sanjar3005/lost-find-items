@@ -18,13 +18,6 @@ class ItemImageSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        if not rep.get('image'):
-            request = self.context.get('request', None)
-            default_url = '/media/item_images/default.png'  # You should have this image in your media folder
-            if request:
-                rep['image'] = request.build_absolute_uri(default_url)
-            else:
-                rep['image'] = default_url
         return rep
 
 class ItemSerializer(serializers.ModelSerializer):
@@ -54,14 +47,8 @@ class ItemSerializer(serializers.ModelSerializer):
 
     def get_images(self, obj):
         images = obj.images.all()
-        if not images.exists():
-            request = self.context.get('request', None)
-            default_url = '/media/item_images/default.png'  # You should have this image in your media folder
-            if request:
-                return [{'id': None, 'image': request.build_absolute_uri(default_url)}]
-            else:
-                return [{'id': None, 'image': default_url}]
-        return ItemImageSerializer(images, many=True, context=self.context).data
+        valid_images = [img for img in images if getattr(img.image, 'url', None)]
+        return ItemImageSerializer(valid_images, many=True, context=self.context).data
 
     def create(self, validated_data):
         uploaded_images = validated_data.pop('uploaded_images', [])
