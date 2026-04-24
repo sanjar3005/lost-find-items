@@ -167,71 +167,10 @@ export default function ItemDetail() {
 
         {/* Responsive layout: On mobile, details first, map second. On desktop, side by side. */}
         <div className={`grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16`}> 
-          {/* Details always first on all screens */}
-          <div className={`w-full ${imageArray.length > 0 ? 'order-1 lg:order-2' : 'order-1'}`}> 
-            <div className='flex flex-wrap gap-2 sm:gap-4 justify-between items-end mb-3'>
-              <h1 className="flex-1 min-w-0 break-words text-2xl xs:text-3xl pb-2 md:text-4xl font-extrabold text-[#0F172A] font-sans leading-tight">
-                {item.title}
-              </h1>
-              <div className="flex flex-wrap gap-2 mb-2 shrink-0 max-h-16 w-full sm:w-auto">
-                <div className="flex items-center gap-2 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap">
-                  <Clock size={16} /> Sana: {item.date_lost_or_found ? formatDateUz(item.date_lost_or_found) : "Noma'lum"}
-                </div>
-                <button
-                  onClick={handleToggleSaved}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold border transition-colors ${isSaved ? 'bg-red-50 text-red-600 border-red-100' : 'bg-white text-slate-600 border-slate-200 hover:border-red-200 hover:text-red-500'}`}
-                  style={{ minWidth: '100px' }}
-                >
-                  <Heart size={16} className={isSaved ? 'fill-current' : ''} />
-                  {isSaved ? "Saqlangan" : "Saqlash"}
-                </button>
-              </div>
-            </div>
-            {/* Description */}
-            <div className="mb-3">
-              <p className="text-slate-600 leading-relaxed text-base bg-slate-50 p-3 rounded-xl border border-slate-100">
-                <span className="font-bold block mb-1">Batafsil ma'lumot:</span> 
-                {item.description || <span className="text-slate-400 italic">Qo'shimcha ma'lumot kiritilmagan</span>}
-              </p>
-            </div>
-            {/* Profile Card */}
-            <div className="bg-[#F8FAFC] rounded-2xl p-4 mb-5 border border-slate-100">
-              <h3 className="text-sm font-bold text-[#0F172A] mb-3">
-                {item.status === 'LOST' ? "Yo'qotgan shaxsning profili" : "Topib olgan shaxsning profili"}
-              </h3>
-              <div className="flex items-center gap-4 mb-4">
-                <img
-                  src={getImageUrl(item.owner_picture)}
-                  alt={item.owner_name}
-                  className="w-14 h-14 rounded-2xl object-cover border border-slate-200"
-                />
-                <div>
-                  <h4 className="font-bold text-[#0F172A] text-lg">{item.owner_name}</h4>
-                  <p className="text-slate-400 text-sm">{item.location_address || "Manzil noma'lum"}</p>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                {item.contact_info ? (
-                  <a
-                    href={`tel:${item.contact_info}`}
-                    className="flex-1 bg-white border border-slate-200 hover:border-[#3B82F6] hover:text-[#3B82F6] text-slate-700 py-2.5 rounded-xl font-semibold transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2"
-                  >
-                    <Phone size={18} /> {item.contact_info}
-                  </a>
-                ) : (
-                  <div className="flex-1 bg-slate-50 border border-slate-200 text-slate-400 py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 cursor-not-allowed cursor-not-allowed">
-                    <Phone size={18} /> Raqam yo'q
-                  </div>
-                )}
-                <button className="flex-1 bg-white border border-slate-200 hover:border-[#3B82F6] hover:text-[#3B82F6] text-slate-700 py-2.5 rounded-xl font-semibold transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2">
-                  <MessageCircle size={18} /> Xabar
-                </button>
-              </div>
-            </div>
-          </div>
-          {/* Right column: images (if any), then map always last */}
-          <div className="w-full order-2 flex flex-col gap-6">
-            {imageArray.length > 0 && (
+          
+          {/* If images exist, put them in the left column */}
+          {imageArray.length > 0 && (
+            <div className="w-full order-2 lg:order-1 flex flex-col gap-6">
               <div className="space-y-4 select-none w-full">
                 {/* Main Image Stage */}
                 <div className="relative aspect-[4/3] w-full bg-slate-100 rounded-3xl overflow-hidden border border-slate-200 shadow-sm group">
@@ -283,39 +222,143 @@ export default function ItemDetail() {
                   </div>
                 )}
               </div>
-            )}
-            {/* Map always last, after images if present */}
+            </div>
+          )}
+
+          {/* Details (and Map if images exist) placed according to condition */}
+          <div className={`w-full flex flex-col gap-6 ${imageArray.length > 0 ? 'order-1 lg:order-2' : 'order-1'}`}> 
             <div>
-              <h3 className="text-sm font-bold text-[#0F172A] mb-3">Manzil</h3>
-              <div className="w-full h-64 bg-slate-100 rounded-2xl overflow-hidden relative border border-slate-200 z-0">
-                {(item.latitude && item.longitude) ? (
-                  <MapContainer
-                    center={[item.latitude, item.longitude]}
-                    zoom={14}
-                    scrollWheelZoom={true}
-                    style={{ height: "100%", width: "100%", zIndex: 1 }}
+              <div className='flex flex-wrap gap-2 sm:gap-4 justify-between items-end mb-3'>
+                <h1 className="flex-1 min-w-0 break-words text-2xl xs:text-3xl pb-2 md:text-4xl font-extrabold text-[#0F172A] font-sans leading-tight">
+                  {item.title}
+                </h1>
+                <div className="flex flex-wrap gap-2 mb-2 shrink-0 max-h-16 w-full sm:w-auto">
+                  <div className="flex items-center gap-2 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap">
+                    <Clock size={16} /> Sana: {item.date_lost_or_found ? formatDateUz(item.date_lost_or_found) : "Noma'lum"}
+                  </div>
+                  <button
+                    onClick={handleToggleSaved}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold border transition-colors ${isSaved ? 'bg-red-50 text-red-600 border-red-100' : 'bg-white text-slate-600 border-slate-200 hover:border-red-200 hover:text-red-500'}`}
+                    style={{ minWidth: '100px' }}
                   >
-                    <TileLayer
-                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    />
-                    <Marker position={[item.latitude, item.longitude]} />
-                  </MapContainer>
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 bg-slate-50">
-                    <MapPin size={40} className="mb-2 opacity-50" />
-                    <p>Xarita ma'lumotlari kiritilmagan</p>
+                    <Heart size={16} className={isSaved ? 'fill-current' : ''} />
+                    {isSaved ? "Saqlangan" : "Saqlash"}
+                  </button>
+                </div>
+              </div>
+              {/* Description */}
+              <div className="mb-3">
+                <p className="text-slate-600 leading-relaxed text-base bg-slate-50 p-3 rounded-xl border border-slate-100">
+                  <span className="font-bold block mb-1">Batafsil ma'lumot:</span> 
+                  {item.description || <span className="text-slate-400 italic">Qo'shimcha ma'lumot kiritilmagan</span>}
+                </p>
+              </div>
+              {/* Profile Card */}
+              <div className="bg-[#F8FAFC] rounded-2xl p-4 mb-5 border border-slate-100">
+                <h3 className="text-sm font-bold text-[#0F172A] mb-3">
+                  {item.status === 'LOST' ? "Yo'qotgan shaxsning profili" : "Topib olgan shaxsning profili"}
+                </h3>
+                <div className="flex items-center gap-4 mb-4">
+                  <img
+                    src={getImageUrl(item.owner_picture)}
+                    alt={item.owner_name}
+                    className="w-14 h-14 rounded-2xl object-cover border border-slate-200"
+                  />
+                  <div>
+                    <h4 className="font-bold text-[#0F172A] text-lg">{item.owner_name}</h4>
+                    <p className="text-slate-400 text-sm">{item.location_address || "Manzil noma'lum"}</p>
                   </div>
-                )}
-                {item.location_address && (
-                  <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-sm p-3 rounded-xl text-sm font-bold text-slate-800 shadow-lg z-[1000] pointer-events-none border border-slate-100 flex items-center gap-2">
-                    <MapPin size={18} className="text-[#3B82F6]" />
-                    {item.location_address}
-                  </div>
-                )}
+                </div>
+                <div className="flex gap-4">
+                  {item.contact_info ? (
+                    <a
+                      href={`tel:${item.contact_info}`}
+                      className="flex-1 bg-white border border-slate-200 hover:border-[#3B82F6] hover:text-[#3B82F6] text-slate-700 py-2.5 rounded-xl font-semibold transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2"
+                    >
+                      <Phone size={18} /> {item.contact_info}
+                    </a>
+                  ) : (
+                    <div className="flex-1 bg-slate-50 border border-slate-200 text-slate-400 py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 cursor-not-allowed">
+                      <Phone size={18} /> Raqam yo'q
+                    </div>
+                  )}
+                  <button className="flex-1 bg-white border border-slate-200 hover:border-[#3B82F6] hover:text-[#3B82F6] text-slate-700 py-2.5 rounded-xl font-semibold transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2">
+                    <MessageCircle size={18} /> Xabar
+                  </button>
+                </div>
               </div>
             </div>
+
+            {/* If there are images, Map goes here. If not, map goes in the other column. */}
+            {imageArray.length > 0 && (
+              <div>
+                <h3 className="text-sm font-bold text-[#0F172A] mb-3">Manzil</h3>
+                <div className="w-full h-64 bg-slate-100 rounded-2xl overflow-hidden relative border border-slate-200 z-0">
+                  {(item.latitude && item.longitude) ? (
+                    <MapContainer
+                      center={[item.latitude, item.longitude]}
+                      zoom={14}
+                      scrollWheelZoom={true}
+                      style={{ height: "100%", width: "100%", zIndex: 1 }}
+                    >
+                      <TileLayer
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      />
+                      <Marker position={[item.latitude, item.longitude]} />
+                    </MapContainer>
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 bg-slate-50">
+                      <MapPin size={40} className="mb-2 opacity-50" />
+                      <p>Xarita ma'lumotlari kiritilmagan</p>
+                    </div>
+                  )}
+                  {item.location_address && (
+                    <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-sm p-3 rounded-xl text-sm font-bold text-slate-800 shadow-lg z-[1000] pointer-events-none border border-slate-100 flex items-center gap-2">
+                      <MapPin size={18} className="text-[#3B82F6]" />
+                      {item.location_address}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* If no images, Map is on the right column alone */}
+          {imageArray.length === 0 && (
+            <div className="w-full order-3 lg:order-2 flex flex-col gap-6">
+              <div>
+                <h3 className="text-sm font-bold text-[#0F172A] mb-3">Manzil</h3>
+                <div className="w-full h-64 bg-slate-100 rounded-2xl overflow-hidden relative border border-slate-200 z-0">
+                  {(item.latitude && item.longitude) ? (
+                    <MapContainer
+                      center={[item.latitude, item.longitude]}
+                      zoom={14}
+                      scrollWheelZoom={true}
+                      style={{ height: "100%", width: "100%", zIndex: 1 }}
+                    >
+                      <TileLayer
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      />
+                      <Marker position={[item.latitude, item.longitude]} />
+                    </MapContainer>
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 bg-slate-50">
+                      <MapPin size={40} className="mb-2 opacity-50" />
+                      <p>Xarita ma'lumotlari kiritilmagan</p>
+                    </div>
+                  )}
+                  {item.location_address && (
+                    <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-sm p-3 rounded-xl text-sm font-bold text-slate-800 shadow-lg z-[1000] pointer-events-none border border-slate-100 flex items-center gap-2">
+                      <MapPin size={18} className="text-[#3B82F6]" />
+                      {item.location_address}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

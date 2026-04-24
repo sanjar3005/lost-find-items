@@ -9,8 +9,12 @@ const BACKEND_URL = 'http://127.0.0.1:8000';
 const CardItem = ({ image, userImage, name, location, onClick, isSaved, onToggleSaved }) => {
   return (
     <div onClick={onClick} className="bg-[#E9E9E9] rounded-[18px] sm:rounded-[24px] p-3 sm:p-4 lg:p-5 flex flex-col gap-3 sm:gap-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
-      <div className="w-full aspect-[4/3] rounded-[12px] sm:rounded-[16px] overflow-hidden bg-white relative">
-        <img src={image} alt="Product" className="w-full h-full object-cover" />
+      <div className="w-full aspect-[4/3] rounded-[12px] sm:rounded-[16px] overflow-hidden bg-white relative flex items-center justify-center">
+        {image ? (
+          <img src={image} alt="Product" className="w-full h-full object-cover" />
+        ) : (
+          <span className="text-gray-400 font-medium text-lg">Rasm yo'q</span>
+        )}
         <button
           onClick={onToggleSaved}
           className={`absolute top-3 right-3 p-2 rounded-full border transition-colors ${isSaved ? 'text-red-500 border-red-200 bg-red-50' : 'text-slate-400 border-slate-200 bg-white hover:text-red-500 hover:border-red-200'}`}
