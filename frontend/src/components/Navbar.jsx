@@ -36,7 +36,7 @@ export default function Navbar() {
       {/* Test Mode Banner */}
       <div className="bg-amber-100 border-b border-amber-200 px-4 py-1.5 flex items-center justify-center gap-2 text-amber-800 text-xs sm:text-sm font-semibold text-center w-full">
         <AlertTriangle size={16} className="shrink-0" />
-        <p>Diqqat! Platforma hozirda test rejimida ishlamoqda, ayrim bo'limlarda xatoliklar uchrashi mumkin.</p>
+        <p>Diqqat! Platforma hozirda test rejimida ishlamoqda!</p>
       </div>
 
       <nav className="relative w-full bg-white border-b border-slate-100">
