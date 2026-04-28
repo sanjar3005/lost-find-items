@@ -59,14 +59,10 @@ const LoginPage = () => {
 
           {/* Logo Header */}
           <div className="flex justify-center items-center gap-2 mb-8">
-            {/* Planet Icon SVG */}
             <div className="w-8 h-8 relative flex items-center justify-center">
-              <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="20" cy="20" r="14" fill="#0F172A" />
-                <path d="M8 26C8 26 15 32 32 14" stroke="#3B82F6" strokeWidth="3" strokeLinecap="round" />
-              </svg>
+              <img src="/img/logo.png" alt="Topilmalar Logo" className="w-full h-full object-contain" />
             </div>
-            <h2 className="text-3xl font-extrabold text-slate-900">Logo</h2>
+            <h2 className="text-3xl font-extrabold text-[#1E85FF] tracking-tight">Topilmalar</h2>
           </div>
 
           {/* Social Login Buttons */}

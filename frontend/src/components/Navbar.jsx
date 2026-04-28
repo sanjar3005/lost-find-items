@@ -45,12 +45,9 @@ export default function Navbar() {
         {/* Logo */}
         <Link to="/" onClick={closeMobileMenu} className="flex items-center gap-2.5 cursor-pointer shrink-0">
           <div className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center">
-            <svg width="36" height="36" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="20" cy="20" r="14" fill="#0F172A" />
-              <path d="M8 26C8 26 15 32 32 14" stroke="#3B82F6" strokeWidth="3" strokeLinecap="round" />
-            </svg>
+            <img src="/img/logo.png" alt="Topilmalar Logo" className="w-full h-full object-contain" />
           </div>
-          <span className="text-xl sm:text-2xl font-extrabold text-[#0F172A] tracking-tight">Logo</span>
+          <span className="text-xl sm:text-2xl font-extrabold text-[#1E85FF] tracking-tight">Topilmalar</span>
         </Link>
 
         {/* Desktop Nav Links — visible from lg+ */}
