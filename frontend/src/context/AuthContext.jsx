@@ -77,13 +77,14 @@ export const AuthProvider = ({ children }) => {
             // Send the Google token to your Django backend
             const data = await apiGoogleLogin(googleAccessToken);
 
-            if (data.tokens.access) {
+            if (data && data.tokens && data.tokens.access) {
                 const userObj = {
                     id: data.user.id,
                     email: data.user.email,
                     first_name: data.user.first_name,
                     last_name: data.user.last_name,
-                    is_verified: data.user.is_verified
+                    is_verified: data.user.is_verified,
+                    avatar: data.user.avatar
                 };
                 setUser(userObj);
                 window.location.href = "/";
