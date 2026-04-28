@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Menu, X, User, LogOut, Settings, FileText } from 'lucide-react';
+import { Search, Menu, X, User, LogOut, Settings, FileText, AlertTriangle } from 'lucide-react';
 import Dropdown from './DropDown';
 import { useAuth } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
@@ -32,8 +32,15 @@ export default function Navbar() {
   );
 
   return (
-    <nav className="w-full bg-white border-b border-slate-100 sticky top-0 z-50">
-      <div className="w-full max-w-7xl mx-auto h-16 px-3 sm:px-4 lg:px-6 flex items-center justify-between font-sans gap-3">
+    <header className="sticky top-0 z-50 w-full flex flex-col shadow-sm">
+      {/* Test Mode Banner */}
+      <div className="bg-amber-100 border-b border-amber-200 px-4 py-1.5 flex items-center justify-center gap-2 text-amber-800 text-xs sm:text-sm font-semibold text-center w-full">
+        <AlertTriangle size={16} className="shrink-0" />
+        <p>Diqqat! Platforma hozirda test rejimida ishlamoqda, ayrim bo'limlarda xatoliklar uchrashi mumkin.</p>
+      </div>
+
+      <nav className="relative w-full bg-white border-b border-slate-100">
+        <div className="w-full max-w-7xl mx-auto h-16 px-3 sm:px-4 lg:px-6 flex items-center justify-between font-sans gap-3">
 
         {/* Logo */}
         <Link to="/" onClick={closeMobileMenu} className="flex items-center gap-2.5 cursor-pointer shrink-0">
@@ -112,7 +119,7 @@ export default function Navbar() {
 
       {/* ── Mobile Menu Dropdown ─────────────────────────────────────── */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden absolute top-16 left-0 w-full bg-white border-b border-slate-100 shadow-2xl z-40">
+        <div className="lg:hidden absolute top-full left-0 w-full bg-white border-b border-slate-100 shadow-2xl z-40">
           <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col gap-1">
 
             {/* Search */}
@@ -226,5 +233,6 @@ export default function Navbar() {
         </div>
       )}
     </nav>
+  </header>
   );
 }
