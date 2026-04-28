@@ -81,7 +81,10 @@ export default function ProfileEdit() {
             const data = new FormData();
             data.append('first_name', formData.first_name);
             data.append('last_name', formData.last_name);
-            data.append('phone_number', cleanedPhone);
+
+            if (cleanedPhone && cleanedPhone.trim() !== '') {
+                data.append('phone_number', cleanedPhone);
+            }
             if (avatarFile) data.append('avatar', avatarFile);
             if (coverFile) data.append('cover_image', coverFile);
 
