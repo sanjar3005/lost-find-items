@@ -32,11 +32,17 @@ export default function Navbar() {
   );
 
   return (
-    <header className="sticky top-0 z-50 w-full flex flex-col shadow-sm">
+    <header className="sticky top-0 z-50 w-full flex flex-col shadow-sm overflow-hidden">
       {/* Test Mode Banner */}
-      <div className="bg-amber-100 border-b border-amber-200 px-4 py-1.5 flex items-center justify-center gap-2 text-amber-800 text-xs sm:text-sm font-semibold text-center w-full">
-        <AlertTriangle size={16} className="shrink-0" />
-        <p>Diqqat! Platforma hozirda test rejimida ishlamoqda!</p>
+      <div className="bg-amber-100 border-b border-amber-200 py-1.5 flex overflow-hidden whitespace-nowrap text-amber-800 text-xs sm:text-sm font-semibold">
+        <div className="animate-marquee flex items-center min-w-max">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="flex items-center gap-2 px-6">
+              <AlertTriangle size={16} className="shrink-0" />
+              <p>Diqqat! Platforma hozirda test rejimida ishlamoqda!</p>
+            </div>
+          ))}
+        </div>
       </div>
 
       <nav className="relative w-full bg-white border-b border-slate-100">

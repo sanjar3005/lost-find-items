@@ -80,7 +80,7 @@ const CreateItemPage = () => {
             setImagePreviews(prev => [...prev, ...newPreviews]);
         } catch (error) {
             console.error("Rasm qisqartirishda xatolik yuz berdi:", error);
-            setError("Rasmlarni qayta ishlashda xatolik yuz berdi.");
+            setError("Kechirasiz, bu rasm formatini qayta ishlab bo'lmadi (masalan, qo'llab-quvvatlanmaydigan DNG yoki HEIC fail). Iltimos, standart JPG yoki PNG formatidagi rasmni tanlang.");
         }
     };
 
@@ -262,9 +262,8 @@ const CreateItemPage = () => {
                     setError(backendErrors.location_address[0]);
                 } else if (backendErrors.contact_info) {
                     setError(backendErrors.contact_info[0]);
-                }else if (backendErrors.contact_info){
-                    setError(backendErrors.contact_info[0])
-
+                } else if (backendErrors.uploaded_images || backendErrors.images || backendErrors.image) {
+                    setError("Rasm yuklashda xatolik: Rasm formati noto'g'ri. Iltimos, faqat JPG yoki PNG formatidagi rasmlarni yuklang.");
                 } else {
                     setError("Noma'lum xatolik yuz berdi. Iltimos, ma'lumotlarni tekshirib qayta urinib ko'ring.");
                 }
@@ -469,7 +468,7 @@ const CreateItemPage = () => {
                                             id="gallery-upload"
                                             type="file" 
                                             multiple 
-                                            accept="image/*" 
+                                            accept="image/jpeg, image/png, image/webp" 
                                             className="hidden" 
                                             onChange={handleImageChange} 
                                         />
