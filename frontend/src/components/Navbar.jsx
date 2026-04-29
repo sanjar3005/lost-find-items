@@ -32,7 +32,7 @@ export default function Navbar() {
   );
 
   return (
-    <header className="sticky top-0 z-50 w-full flex flex-col shadow-sm overflow-hidden">
+    <header className="sticky top-0 z-50 w-full flex flex-col shadow-sm">
       {/* Test Mode Banner */}
       <div className="bg-amber-100 border-b border-amber-200 py-1.5 flex overflow-hidden whitespace-nowrap text-amber-800 text-xs sm:text-sm font-semibold">
         <div className="animate-marquee flex items-center min-w-max">
