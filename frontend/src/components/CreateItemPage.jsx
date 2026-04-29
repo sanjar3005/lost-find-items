@@ -6,6 +6,8 @@ import LocationPicker from '../components/LocationPicker'; // The map component 
 import api from '../service/api'; // Your configured axios instance
 
 
+import imageCompression from 'browser-image-compression';
+
 const CreateItemPage = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -47,7 +49,7 @@ const CreateItemPage = () => {
     const [success, setSuccess] = useState(false);
 
     // Handle Image Selection
-    const appendSelectedFiles = (fileList) => {
+    const appendSelectedFiles = async (fileList) => {
         const files = Array.from(fileList || []);
         if (files.length === 0) return;
 
@@ -56,11 +58,30 @@ const CreateItemPage = () => {
             return;
         }
 
-        setImages(prev => [...prev, ...files]);
+        const options = {
+            maxSizeMB: 1, // Compress to ~1MB
+            maxWidthOrHeight: 1280, // Resize up to 1280px
+            useWebWorker: true
+        };
 
-        // Create local URLs to show previews to the user
-        const newPreviews = files.map(file => URL.createObjectURL(file));
-        setImagePreviews(prev => [...prev, ...newPreviews]);
+        try {
+            const compressedFiles = await Promise.all(
+                files.map(async (file) => {
+                    const compFile = await imageCompression(file, options);
+                    // browser-image-compression sometimes drops the filename/File type on older browsers, ensure it's a File
+                    return new File([compFile], file.name || `photo_${Date.now()}.jpg`, { type: compFile.type });
+                })
+            );
+
+            setImages(prev => [...prev, ...compressedFiles]);
+
+            // Create local URLs to show previews to the user
+            const newPreviews = compressedFiles.map(file => URL.createObjectURL(file));
+            setImagePreviews(prev => [...prev, ...newPreviews]);
+        } catch (error) {
+            console.error("Rasm qisqartirishda xatolik yuz berdi:", error);
+            setError("Rasmlarni qayta ishlashda xatolik yuz berdi.");
+        }
     };
 
     const handleImageChange = (e) => {

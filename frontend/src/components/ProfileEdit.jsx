@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import api from '../service/api';
 import { Camera, Save, ArrowLeft, Lock } from 'lucide-react';
+import imageCompression from 'browser-image-compression';
 
 const BACKEND_URL = "http://127.0.0.1:8000";
 
@@ -53,16 +54,30 @@ export default function ProfileEdit() {
 
     if (!user) return null;
 
-    const handleFileChange = (e, type) => {
+    const handleFileChange = async (e, type) => {
         const file = e.target.files[0];
         if (!file) return;
+
+        const options = {
+            maxSizeMB: 1, // Compress to ~1MB
+            maxWidthOrHeight: 1280, // Resize up to 1280px
+            useWebWorker: true
+        };
         
-        if (type === 'avatar') {
-            setAvatarFile(file);
-            setAvatarPreview(URL.createObjectURL(file));
-        } else {
-            setCoverFile(file);
-            setCoverPreview(URL.createObjectURL(file));
+        try {
+            const compressedFile = await imageCompression(file, options);
+            const finalFile = new File([compressedFile], file.name || `photo_${Date.now()}.jpg`, { type: compressedFile.type });
+
+            if (type === 'avatar') {
+                setAvatarFile(finalFile);
+                setAvatarPreview(URL.createObjectURL(finalFile));
+            } else {
+                setCoverFile(finalFile);
+                setCoverPreview(URL.createObjectURL(finalFile));
+            }
+        } catch (error) {
+            console.error("Rasmni qayta ishlashda xatolik:", error);
+            setMessage("Rasmni yuklashda xatolik yuz berdi.");
         }
     };
 
