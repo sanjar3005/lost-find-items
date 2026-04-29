@@ -67,7 +67,12 @@ const CreateItemPage = () => {
         try {
             const compressedFiles = await Promise.all(
                 files.map(async (file) => {
+                    console.log(`📸 Original rasm hajmi: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
+                    
                     const compFile = await imageCompression(file, options);
+                    
+                    console.log(`📉 Qisqartirilgan rasm hajmi: ${(compFile.size / 1024 / 1024).toFixed(2)} MB`);
+                    
                     // browser-image-compression sometimes drops the filename/File type on older browsers, ensure it's a File
                     return new File([compFile], file.name || `photo_${Date.now()}.jpg`, { type: compFile.type });
                 })
