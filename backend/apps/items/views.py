@@ -1,21 +1,19 @@
 from django.db.models import Q
 from django.shortcuts import render
-from .tasks import process_item_images
+from django.core.files.storage import default_storage
+import os
+from .utils import analyze_item_image
+from .taxonomy import resolve_categories_from_suggestions
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework import permissions
-from .models import Item, Category, SavedItem, Color
-from .serializers import ItemSerializer,CategorySerializer, ColorSerializer
+from .models import Item, Category, SavedItem
+from .serializers import ItemSerializer,CategorySerializer
 from .permissions import IsOwnerOrReadOnly
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
-class ColorViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Color.objects.all().order_by('name')
-    serializer_class = ColorSerializer
-    permission_classes = [permissions.AllowAny]
 
 class ItemViewSet(viewsets.ModelViewSet):
     serializer_class = ItemSerializer
@@ -44,21 +42,26 @@ class ItemViewSet(viewsets.ModelViewSet):
         is_resolved = self.request.query_params.get('is_resolved')
         saved = self.request.query_params.get('saved')
         include_resolved = self.request.query_params.get('include_resolved')
-        colors = self.request.query_params.get('colors')
 
         if self.action == 'list' and include_resolved != 'true':
             qs = qs.filter(is_resolved=False)
 
         if search:
-            qs = qs.filter(Q(title__icontains=search) | Q(description__icontains=search) | Q(ai_labels__icontains=search))
-            
-        if colors:
-            color_names = [c.strip().lower() for c in colors.split(',')]
-            qs = qs.filter(colors__name__iregex=r'(' + '|'.join(color_names) + ')').distinct()
+            qs = qs.filter(Q(title__icontains=search) | Q(description__icontains=search))
 
         if category:
-            # We filter precisely by category_id or categories (M2M) to avoid matching unrelated items 
-            qs = qs.filter(Q(category_id=category) | Q(categories__id=category)).distinct()
+            # Include selected category and all of its subcategories
+            category_ids = []
+            stack = [int(category)]
+            while stack:
+                current_id = stack.pop()
+                if current_id in category_ids:
+                    continue
+                category_ids.append(current_id)
+                child_ids = list(Category.objects.filter(parent_id=current_id).values_list('id', flat=True))
+                stack.extend(child_ids)
+
+            qs = qs.filter(Q(category_id__in=category_ids) | Q(categories__id__in=category_ids)).distinct()
         if status:
             qs = qs.filter(status=status)
         if start_date:
@@ -77,7 +80,38 @@ class ItemViewSet(viewsets.ModelViewSet):
         # using their secure JWT token. The user CANNOT fake this.
         item = serializer.save(user=self.request.user)
 
-        process_item_images.delay(item.id)
+        # Strict taxonomy mode: map AI suggestions to existing categories only
+        suggested_categories = self.request.data.get('suggested_categories')
+        resolved_categories, main_category = resolve_categories_from_suggestions(suggested_categories)
+
+        if resolved_categories:
+            item.categories.add(*resolved_categories)
+
+        if not item.category:
+            item.category = main_category
+
+        item.is_processed = True
+        item.save()
+
+        # Process the image properly only if we need legacy tasks
+        # process_item_images.delay(item.id)
+
+    @action(detail=False, methods=['post'], url_path='analyze-image')
+    def analyze_image(self, request):
+        image_file = request.FILES.get('image')
+        if not image_file:
+            return Response({"error": "No image provided"}, status=400)
+        
+        # Save temp file
+        path = default_storage.save('temp/' + image_file.name, image_file)
+        full_path = default_storage.path(path)
+        
+        try:
+            result = analyze_item_image(full_path)
+            return Response(result)
+        finally:
+            if os.path.exists(full_path):
+                os.remove(full_path)
 
     @action(detail=True, methods=['post'], url_path='toggle-save')
     def toggle_save(self, request, pk=None):

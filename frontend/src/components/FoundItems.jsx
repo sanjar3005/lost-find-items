@@ -3,10 +3,12 @@ import { useNavigate } from "react-router-dom"; // 1. Navigatsiya uchun import
 import HomeCart from "./HomeCart";
 import api from "../service/api";
 import { useEffect } from "react";
+import { useLanguage } from '../context/LanguageContext';
 
 const BACKEND_URL = "http://127.0.0.1:8000";
 
 export default function FoundItems() {
+    const { t } = useLanguage();
     const navigate = useNavigate(); // 2. Hookni chaqiramiz
     const [items, setItems] = React.useState([]);
     useEffect(() => {
@@ -29,12 +31,12 @@ export default function FoundItems() {
     return (
         <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
             <div className='flex justify-between items-end my-5 sm:my-8 gap-3'>
-                <h1 className='text-xl sm:text-2xl lg:text-3xl font-bold'>Topib olingan buyumlar</h1>
+                <h1 className='text-xl sm:text-2xl lg:text-3xl font-bold'>{t('sections.foundItemsTitle')}</h1>
                 <button
                     onClick={() => navigate('/items?status=FOUND')}
                     className='hover:text-[#1e88e5] cursor-pointer underline underline-offset-4 sm:underline-offset-8 decoration-blue-600 text-sm sm:text-base pb-1'
                 >
-                    Ko'proq
+                    {t('sections.foundItemsMore')}
                 </button>
             </div>
 

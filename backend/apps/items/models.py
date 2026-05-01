@@ -3,14 +3,11 @@ from apps.users.models import User, BaseModel
 
 # Create your models here.
 class Category(BaseModel, models.Model):
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='subcategories')
     name = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
-
-class Color(BaseModel, models.Model):
-    name = models.CharField(max_length=50, unique=True)
-    hex_code = models.CharField(max_length=7, blank=True, null=True)
+    name_ru = models.CharField(max_length=100, null=True, blank=True)
+    name_en = models.CharField(max_length=100, null=True, blank=True)
+    name_uz = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -37,11 +34,9 @@ class Item(BaseModel, models.Model):
     is_resolved = models.BooleanField(default=False)
     status = models.CharField(max_length=10, choices=ItemStatus.choices)
 
-    ai_labels = models.TextField(blank=True, null=True)
     is_processed = models.BooleanField(default=False)
     
     categories = models.ManyToManyField(Category, related_name='items_m2m', blank=True)
-    colors = models.ManyToManyField(Color, related_name='items', blank=True)
 
     def __str__(self):
         return f"{self.title} - {self.user.first_name}"

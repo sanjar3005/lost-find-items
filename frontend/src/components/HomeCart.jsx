@@ -3,10 +3,12 @@ import { Calendar, ChevronRight, Heart } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import api from '../service/api';
+import { useLanguage } from '../context/LanguageContext';
 
 // 1. onDetails propini qo'shdik
 const HomeCart = ({ date, title, author, authorImage, image, onDetails, onMap, itemId, initialSaved = false, onSavedChange }) => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const noImagePlaceholder = false; // Default value for noImagePlaceholder
   const navigate = useNavigate();
   const [saved, setSaved] = useState(Boolean(initialSaved));
@@ -47,7 +49,7 @@ const HomeCart = ({ date, title, author, authorImage, image, onDetails, onMap, i
         <button
           onClick={handleToggleSaved}
           className={`absolute top-2 right-2 z-10 p-1.5 sm:p-2 rounded-full backdrop-blur-sm transition-all shadow-sm ${saved ? 'bg-red-500 text-white' : 'bg-white/80 text-slate-500 hover:bg-white hover:text-red-500'}`}
-          aria-label="Saqlash"
+          aria-label={t('common.save')}
         >
           <Heart size={14} className={saved ? 'fill-current' : ''} />
         </button>
@@ -55,14 +57,14 @@ const HomeCart = ({ date, title, author, authorImage, image, onDetails, onMap, i
         {/* Kitob rasmi foni */}
         {noImagePlaceholder || !image || typeof image !== 'string' || image.trim() === '' ? (
           <div className="w-full h-full flex items-center justify-center bg-[#e4e9f1] text-[#5a7ca9] text-base sm:text-lg font-semibold">
-            Rasm yo'q
+            {t('common.noImage')}
           </div>
         ) : (
           <img 
             src={image} 
             alt={title} 
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            onError={e => { e.target.onerror = null; e.target.style.display = 'none'; e.target.parentNode && (e.target.parentNode.innerHTML = `<div class='w-full h-full flex items-center justify-center bg-[#e4e9f1] text-[#5a7ca9] text-base sm:text-lg font-semibold'>Rasm yo'q</div>`); }}
+            onError={e => { e.target.onerror = null; e.target.style.display = 'none'; e.target.parentNode && (e.target.parentNode.innerHTML = `<div class='w-full h-full flex items-center justify-center bg-[#e4e9f1] text-[#5a7ca9] text-base sm:text-lg font-semibold'>${t('common.noImage')}</div>`); }}
           />
         )}
       </div>
@@ -72,7 +74,7 @@ const HomeCart = ({ date, title, author, authorImage, image, onDetails, onMap, i
         <div className="space-y-1.5 sm:space-y-2">
           {/* Title */}
           <h3 className="text-slate-900 text-sm sm:text-base font-bold line-clamp-2 leading-snug">
-            {title || "Noma'lum buyum"}
+            {title || t('sections.unknownItem')}
           </h3>
 
           {/* Author and Link Row */}
@@ -82,7 +84,7 @@ const HomeCart = ({ date, title, author, authorImage, image, onDetails, onMap, i
                 <img src={authorImage || 'https://via.placeholder.com/120x120?text=User'} alt={author} className="w-full h-full object-cover" />
               </div>
               <span className="text-slate-500 font-medium text-xs sm:text-sm truncate">
-                {author || "Foydalanuvchi"}
+                {author || t('sections.ownerUnknown')}
               </span>
             </div>
 
@@ -90,7 +92,7 @@ const HomeCart = ({ date, title, author, authorImage, image, onDetails, onMap, i
               onClick={(e) => { e.stopPropagation(); onMap(); }}
               className="flex items-center text-[#1E85FF] font-semibold text-xs hover:underline whitespace-nowrap shrink-0 pr-1 ml-2"
             >
-              Xarita <ChevronRight size={14} className="ml-0.5" />
+              {t('sections.viewMap')} <ChevronRight size={14} className="ml-0.5" />
             </button>
           </div>
         </div>
@@ -100,7 +102,7 @@ const HomeCart = ({ date, title, author, authorImage, image, onDetails, onMap, i
           onClick={(e) => { e.stopPropagation(); onDetails(); }}
           className="w-full mt-2 bg-slate-50 border border-slate-200 text-slate-700 py-2 sm:py-2.5 rounded-lg font-bold text-xs sm:text-sm hover:bg-[#1E85FF] hover:border-[#1E85FF] hover:text-white transition-all active:scale-95"
         >
-          Batafsil ko'rish
+          {t('sections.viewDetails')}
         </button>
       </div>
     </div>

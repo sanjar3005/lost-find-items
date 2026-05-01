@@ -42,7 +42,7 @@ export default function Dropdown({ label, items = [] }) {
                 );
               }
 
-              if (item.type === "button") {
+              if (item.type === "button" || item.onClick) {
                 return (
                   <button
                     key={index}

@@ -4,12 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import api from '../service/api';
 import { Camera, Save, ArrowLeft, Lock } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
+import { useLanguage } from '../context/LanguageContext';
 
 const BACKEND_URL = "http://127.0.0.1:8000";
 
 export default function ProfileEdit() {
     const { user, setUser } = useAuth();
     const navigate = useNavigate();
+    const { t } = useLanguage();
 
     const [formData, setFormData] = useState({
         first_name: '',
@@ -176,7 +178,7 @@ export default function ProfileEdit() {
         <div className="min-h-screen bg-slate-50 py-8">
             <div className="max-w-3xl mx-auto px-4">
                 <button onClick={() => navigate('/profile')} className="flex items-center gap-2 text-slate-500 hover:text-blue-600 mb-6 font-semibold transition-colors">
-                    <ArrowLeft size={20} /> Profilga qaytish
+                    <ArrowLeft size={20} /> {t('profileEdit.backToProfile')}
                 </button>
 
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
@@ -187,12 +189,12 @@ export default function ProfileEdit() {
                         ) : (
                             <div className="w-full h-full flex flex-col items-center justify-center text-slate-400">
                                 <Camera size={40} className="mb-2 opacity-50" />
-                                <span className="font-medium text-sm">Muqova rasmi yuklash</span>
+                                <span className="font-medium text-sm">{t('profileEdit.uploadCover')}</span>
                             </div>
                         )}
                         <label className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                             <span className="bg-white text-slate-900 px-4 py-2 rounded-lg font-bold text-sm shadow flex items-center gap-2">
-                                <Camera size={18} /> O'zgartirish
+                                <Camera size={18} /> {t('profileEdit.change')}
                             </span>
                             <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileChange(e, 'cover')} />
                         </label>
@@ -223,10 +225,10 @@ export default function ProfileEdit() {
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                             {/* Profile Info Form */}
                             <div>
-                                <h3 className="text-xl font-bold text-slate-900 mb-4">Shaxsiy ma'lumotlar</h3>
+                                <h3 className="text-xl font-bold text-slate-900 mb-4">{t('profileEdit.personalInfo')}</h3>
                                 <form onSubmit={handleSaveProfile} className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-bold text-slate-700 mb-1">Ism</label>
+                                        <label className="block text-sm font-bold text-slate-700 mb-1">{t('profileEdit.firstName')}</label>
                                         <input 
                                             type="text" 
                                             value={formData.first_name} 
@@ -235,7 +237,7 @@ export default function ProfileEdit() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-bold text-slate-700 mb-1">Familiya</label>
+                                        <label className="block text-sm font-bold text-slate-700 mb-1">{t('profileEdit.lastName')}</label>
                                         <input 
                                             type="text" 
                                             value={formData.last_name} 
@@ -244,7 +246,7 @@ export default function ProfileEdit() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-bold text-slate-700 mb-1">Telefon raqam</label>
+                                        <label className="block text-sm font-bold text-slate-700 mb-1">{t('profileEdit.phoneNumber')}</label>
                                         <input 
                                             type="text" 
                                             value={formData.phone_number} 
@@ -257,7 +259,7 @@ export default function ProfileEdit() {
                                         disabled={loading}
                                         className="w-full bg-[#1E85FF] text-white font-bold py-3 rounded-xl hover:bg-blue-600 transition-colors shadow-md shadow-blue-500/20 flex items-center justify-center gap-2"
                                     >
-                                        <Save size={18} /> {loading ? "Saqlanmoqda..." : "Saqlash"}
+                                        <Save size={18} /> {loading ? t('profileEdit.saving') : t('profileEdit.save')}
                                     </button>
                                 </form>
                             </div>
@@ -265,7 +267,7 @@ export default function ProfileEdit() {
                             {/* Password Form */}
                             <div>
                                 <h3 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
-                                    <Lock size={20} className="text-slate-400"/> Parolni o'zgartirish
+                                    <Lock size={20} className="text-slate-400"/>{t('profileEdit.changePassword')}
                                 </h3>
                                 {!otpVerified ? (
                                     <div className="space-y-4">
@@ -275,13 +277,13 @@ export default function ProfileEdit() {
                                             disabled={loading}
                                             className="w-full bg-[#1E85FF] text-white font-bold py-3 rounded-xl hover:bg-blue-600 transition-colors shadow-md shadow-blue-500/20"
                                         >
-                                            {loading ? 'Yuborilmoqda...' : (otpSent ? 'Kodni qayta yuborish' : 'Email orqali tasdiqlash kodini olish')}
+                                            {loading ? t('profileEdit.sending') : otpSent ? t('profileEdit.resendCode') : t('profileEdit.getVerificationCode')}
                                         </button>
                                         {otpSent && (
                                             <div className="space-y-3">
                                                 <input
                                                     type="text"
-                                                    placeholder="Tasdiqlash kodi"
+                                                    placeholder={t('profileEdit.verificationCode')}
                                                     value={otpCode}
                                                     onChange={e => setOtpCode(e.target.value)}
                                                     className="w-full bg-[#f3f4f6] text-slate-800 px-4 py-3 rounded-xl border-none focus:ring-2 focus:ring-blue-500 outline-none font-medium text-center tracking-widest text-lg"
@@ -292,7 +294,7 @@ export default function ProfileEdit() {
                                                     disabled={loading || !otpCode}
                                                     className="w-full bg-slate-800 text-white font-bold py-3 rounded-xl hover:bg-slate-900 transition-colors shadow-md disabled:opacity-50"
                                                 >
-                                                    Tasdiqlash
+                                                    {t('profileEdit.verify')}
                                                 </button>
                                             </div>
                                         )}
@@ -300,7 +302,7 @@ export default function ProfileEdit() {
                                 ) : (
                                     <form onSubmit={handleChangePassword} className="space-y-4">
                                         <div>
-                                            <label className="block text-sm font-bold text-slate-700 mb-1">{user?.has_usable_password === false ? 'Yangi parol (Google hisobi)' : 'Yangi parol'}</label>
+                                            <label className="block text-sm font-bold text-slate-700 mb-1">{user?.has_usable_password === false ? t('profileEdit.newPasswordGoogle') : t('profileEdit.newPassword')}</label>
                                             <input
                                                 type="password"
                                                 value={passwords.new_password}
@@ -313,7 +315,7 @@ export default function ProfileEdit() {
                                             disabled={loading || !passwords.new_password}
                                             className="w-full bg-slate-800 text-white font-bold py-3 rounded-xl hover:bg-slate-900 transition-colors shadow-md disabled:opacity-50"
                                         >
-                                            {user?.has_usable_password === false ? 'Parolni saqlash' : 'Parolni yangilash'}
+                                            {user?.has_usable_password === false ? t('profileEdit.savePassword') : t('profileEdit.updatePassword')}
                                         </button>
                                     </form>
                                 )}

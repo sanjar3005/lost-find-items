@@ -1,22 +1,20 @@
 ﻿from celery import shared_task
-from .models import Item, ItemImage, Category, Color
+from .models import Item, Category
 
 @shared_task
 def process_item_images(item_id):
     try:
-        from .utils import get_labels_with_colors
+        from .utils import analyze_item_image
 
         item = Item.objects.get(id=item_id)
         image_obj = item.images.first()
         
         if image_obj:
-            result = get_labels_with_colors(image_obj.image.path)
+            result = analyze_item_image(image_obj.image.path)
 
             # Extract data from the dictionary
-            labels_with_colors = result.get("labels_with_colors", [])
             nouns = result.get("nouns", [])
 
-            item.ai_labels = ", ".join(labels_with_colors)
             item.is_processed = True
             item.save()
 
@@ -41,14 +39,6 @@ def process_item_images(item_id):
 
                     item.categories.add(cat)
                     print(f"Added category '{cat.name}' to item '{item.title}'")
-            
-            for label in labels_with_colors:
-                parts = label.split()
-                if len(parts) > 1:
-                    color_name = parts[0].capitalize()
-                    color_obj, _ = Color.objects.get_or_create(name=color_name)
-                    item.colors.add(color_obj)
-                    print(f"Added color '{color_name}' to item '{item.title}'")
 
             item.save()
 

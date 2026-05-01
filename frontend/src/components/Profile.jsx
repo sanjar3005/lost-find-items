@@ -4,10 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import HomeCart from './HomeCart';
 import api from '../service/api';
 import { Settings, LogOut, CheckCircle2 } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Profile() {
     const { user, logoutUser } = useAuth();
     const navigate = useNavigate();
+    const { t } = useLanguage();
     const [myItems, setMyItems] = useState([]);
     const [savedItems, setSavedItems] = useState([]); // Or fetch from a separate "favorites" api if one exists
     const [loading, setLoading] = useState(true);
@@ -106,8 +108,8 @@ export default function Profile() {
     };
 
     const renderItemGrid = (items, isMyItems = false) => {
-        if (loading) return <div className="text-slate-500 py-10">Yuklanmoqda...</div>;
-        if (items.length === 0) return <div className="text-slate-400 py-10 bg-slate-50 rounded-2xl text-center border border-slate-100">Hech narsa topilmadi.</div>;
+        if (loading) return <div className="text-slate-500 py-10">{t('profile.loading')}</div>;
+        if (items.length === 0) return <div className="text-slate-400 py-10 bg-slate-50 rounded-2xl text-center border border-slate-100">{t('profile.noItemsFound')}</div>;
 
         return (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mt-6">
@@ -124,7 +126,7 @@ export default function Profile() {
                             <div className="relative">
                                 {item.is_resolved && (
                                     <div className="absolute top-2 left-2 z-20 bg-green-500 text-white px-2 py-1 text-xs font-bold rounded shadow">
-                                        Topilgan / Yopilgan
+                                        {t('profile.resolved')}
                                     </div>
                                 )}
                                 <HomeCart
@@ -150,23 +152,23 @@ export default function Profile() {
                                         className={`py-2 w-full text-sm font-bold rounded-lg transition-colors ${item.is_resolved ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-green-500 hover:bg-green-600 text-white shadow-sm'}`}
                                     >
                                         {item.is_resolved
-                                            ? "Holatni bekor qilish"
+                                            ? t('profile.cancelStatus')
                                             : item.status === 'FOUND'
-                                                ? "Berildi / Topshirildi"
-                                                : "Olingan / Topildi"
+                                                ? t('profile.markAsDelivered')
+                                                : t('profile.markAsReceived')
                                         }
                                     </button>
                                     <button
                                         onClick={() => navigate(`/edit-item/${item.id}`)}
                                         className="py-2 w-full text-sm font-bold rounded-lg transition-colors bg-[#1E85FF] hover:bg-blue-600 text-white shadow-sm"
                                     >
-                                        Tahrirlash
+                                        {t('profile.edit')}
                                     </button>
                                     <button
                                         onClick={() => handleDeleteItem(item.id)}
                                         className="py-2 w-full text-sm font-bold rounded-lg transition-colors bg-red-50 hover:bg-red-100 text-red-600 border border-red-100"
                                     >
-                                        O'chirish
+                                        {t('profile.delete')}
                                     </button>
                                 </div>
                             )}
@@ -221,11 +223,11 @@ export default function Profile() {
                     <div className="flex gap-3 mt-4 md:mt-2 w-full md:w-auto">
                         <button onClick={() => navigate('/settings')} className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#F3F4F6] hover:bg-[#E5E7EB] text-slate-700 px-6 py-3 rounded-xl font-bold transition-all">
                             <Settings size={18} />
-                            Tahrirlash
+                            {t('profile.editProfile')}
                         </button>
                         <button onClick={logoutUser} className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 px-6 py-3 rounded-xl font-bold transition-all">
                             <LogOut size={18} />
-                            Chiqish
+                            {t('profile.logout')}
                         </button>
                     </div>
                 </div>
@@ -237,13 +239,13 @@ export default function Profile() {
                 {/* SAVED ITEMS ROW */}
                 <div className="mb-16">
                     <h2 className="text-2xl font-extrabold text-slate-900 border-b border-slate-200 pb-4">
-                        Saqlangan elonlar <span className="text-slate-400 text-base font-medium ml-2">({savedItems.length})</span>
+                        {t('profile.savedAds')} <span className="text-slate-400 text-base font-medium ml-2">({savedItems.length})</span>
                     </h2>
                     {renderItemGrid(savedItems)}
                     {savedItems.length > 0 && (
                         <div className="flex justify-center mt-8">
                             <button className="px-8 py-3 border-2 border-[#1E85FF] text-[#1E85FF] font-bold rounded-xl hover:bg-blue-50 transition-colors">
-                                Ko'proq yuklash
+                                {t('profile.loadMoreButton')}
                             </button>
                         </div>
                     )}
@@ -252,13 +254,13 @@ export default function Profile() {
                 {/* MY ITEMS ROW */}
                 <div>
                     <h2 className="text-2xl font-extrabold text-slate-900 border-b border-slate-200 pb-4">
-                        Mening elonlarim <span className="text-slate-400 text-base font-medium ml-2">({myItems.length})</span>
+                        {t('profile.myAds')} <span className="text-slate-400 text-base font-medium ml-2">({myItems.length})</span>
                     </h2>
                     {renderItemGrid(myItems, true)}
                     {myItems.length > 0 && (
                         <div className="flex justify-center mt-8">
                             <button className="px-8 py-3 border-2 border-[#1E85FF] text-[#1E85FF] font-bold rounded-xl hover:bg-blue-50 transition-colors">
-                                Ko'proq yuklash
+                                {t('profile.loadMoreButton')}
                             </button>
                         </div>
                     )}

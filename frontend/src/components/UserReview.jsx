@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '../context/LanguageContext';
 
 const TestimonialCard = ({ name, surname, feedback, image }) => (
   <div className="bg-white rounded-[15px] p-5 shadow-sm flex flex-col gap-3 border border-gray-50 hover:shadow-md transition-shadow">
@@ -27,6 +28,7 @@ const TestimonialCard = ({ name, surname, feedback, image }) => (
 );
 
 const UserReview = () => {
+  const { t } = useLanguage();
   const reviews = [
     {
       id: 1,
@@ -58,10 +60,10 @@ const UserReview = () => {
         {/* Sarlavha qismi */}
         <div className="lg:w-1/4 space-y-2">
           <h2 className="text-[#0a1d37] text-xl md:text-3xl font-bold leading-tight">
-            Bu servis haqida foydalanuvchilarning fikri!
+            {t('testimonials.title')}
           </h2>
           <p className="text-gray-700 text-xs md:text-sm font-medium">
-            Bu yerda siz servisga baxo berishingiz mumkin
+            {t('testimonials.subtitle')}
           </p>
         </div>
 

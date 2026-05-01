@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../service/api';
+import { useLanguage } from '../context/LanguageContext';
 
 const BACKEND_URL = 'http://127.0.0.1:8000';
 
@@ -10,6 +11,7 @@ const getAvatarUrl = (url) => {
 };
 
 const FoundedPerson = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
 
@@ -43,17 +45,17 @@ const FoundedPerson = () => {
       <div className="flex justify-between items-end mb-8">
         <div>
           <h2 className="text-[#0a1d37] text-2xl md:text-4xl font-bold ">
-            Yo'qolgan buyumni topganlar
+            {t('sections.foundedPersonTitle')}
           </h2>
           <p className="text-gray-500 mt-1 text-xs md:text-base font-medium">
-            Bu yerda siz topilgan narsalarni ko'rishingiz mumkin
+            {t('sections.foundedPersonSubtitle')}
           </p>
         </div>
         <button
           onClick={() => navigate('/items?status=FOUND')}
           className="hover:text-[#1e88e5] underline underline-offset-4 sm:underline-offset-8 decoration-blue-600 text-sm md:text-base pb-1 whitespace-nowrap cursor-pointer md:mb-5"
         >
-          Ko'proq
+          {t('sections.foundedPersonMore')}
         </button>
       </div>
 

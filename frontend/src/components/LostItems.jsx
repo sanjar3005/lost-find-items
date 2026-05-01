@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../service/api';
 import { Heart } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const BACKEND_URL = 'http://127.0.0.1:8000';
 
@@ -30,10 +31,10 @@ const CardItem = ({ image, userImage, name, location, onClick, isSaved, onToggle
         </div>
         <div className="flex flex-col">
           <span className="text-[#0A2342] font-bold text-sm sm:text-base lg:text-lg leading-tight">
-            {name}
+            {name || t('sections.ownerUnknown')}
           </span>
           <span className="text-[#8E8E93] text-xs sm:text-sm lg:text-base font-medium">
-            {location}
+            {location || t('common.unknown')}
           </span>
         </div>
       </div>
@@ -42,6 +43,7 @@ const CardItem = ({ image, userImage, name, location, onClick, isSaved, onToggle
 };
 
 const LostItems = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [items, setItems] = useState([]);
@@ -80,17 +82,17 @@ const LostItems = () => {
       <div className="flex justify-between items-end mb-5 sm:mb-8 gap-3">
         <div>
           <h2 className="text-[#0a1d37] text-xl sm:text-2xl lg:text-4xl font-bold leading-tight">
-            Yo'qolgan buyumlar
+            {t('sections.lostItemsTitle')}
           </h2>
           <p className="text-gray-500 mt-1 text-xs sm:text-sm md:text-base font-medium">
-            Bu yerda siz yo'qolgan narsalarni ko'rishingiz mumkin
+            {t('sections.lostItemsDescription')}
           </p>
         </div>
         <button
           onClick={() => navigate('/items?status=LOST')}
           className="hover:text-[#1e88e5] underline underline-offset-4 sm:underline-offset-8 decoration-blue-600 cursor-pointer text-sm md:text-base pb-1 whitespace-nowrap"
         >
-          Ko'proq
+          {t('sections.lostItemsMore')}
         </button>
       </div>
 

@@ -1,6 +1,7 @@
 import React from 'react';
 // Changed BellPlus to Bell (valid Lucide icon)
 import { UserPlus, Bell, AlertCircle } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const InfoCard = ({ icon: Icon, title, description }) => (
   <div className=" bg-[#E6EFFA]/50 rounded-2xl p-5 flex flex-col gap-4 transition-all hover:shadow-lg cursor-pointer">
@@ -21,27 +22,28 @@ const InfoCard = ({ icon: Icon, title, description }) => (
 );
 
 const HowItWorks = () => {
+  const { t } = useLanguage();
   const data = [
     {
       icon: UserPlus,
-      title: "Royxatdan o’tish",
-      description: "Royxatdan o’tish tugmasi bosiladi va shaxsiy malumotlar to’ldiriladi.",
+      title: t('landing.step1Title'),
+      description: t('landing.step1Description'),
     },
     {
       icon: Bell, // Fixed from BellPlus
-      title: "Elon berish",
-      description: "Biror bir narsangizni yo’qotgan bo’lsangiz Elon berish tugmasi bosiladi.",
+      title: t('landing.step2Title'),
+      description: t('landing.step2Description'),
     },
     {
       icon: AlertCircle,
-      title: "Xabar berish",
-      description: "Biror bir narsani topib olsangiz elon berish tugmasi bosiladi.",
+      title: t('landing.step3Title'),
+      description: t('landing.step3Description'),
     }
   ];
 
   return (
     <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-10">
-      <h1 className='text-xl sm:text-2xl lg:text-3xl mb-5 sm:mb-8 font-bold leading-tight'>Bu qanday ishlaydi?</h1>
+      <h1 className='text-xl sm:text-2xl lg:text-3xl mb-5 sm:mb-8 font-bold leading-tight'>{t('landing.howItWorks')}</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {data.map((item, index) => (
           <InfoCard key={index} {...item} />

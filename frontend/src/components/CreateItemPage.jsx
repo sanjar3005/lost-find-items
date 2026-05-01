@@ -1,142 +1,297 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Sparkles, MapPin, Calendar, AlignLeft, Tag, Phone, Camera, X, CheckCircle2, AlertCircle, Loader2, Camera as CameraIcon } from 'lucide-react';
-import LocationPicker from '../components/LocationPicker'; // The map component we built earlier
-import api from '../service/api'; // Your configured axios instance
-
-
+import { useLanguage } from '../context/LanguageContext';
+import { getCategoryDisplayName } from '../utils/category';
+import {
+    AlertCircle,
+    AlignLeft,
+    ArrowLeft,
+    ArrowRight,
+    Calendar,
+    Camera,
+    Camera as CameraIcon,
+    CheckCircle2,
+    Loader2,
+    MapPin,
+    Phone,
+    Plus,
+    Sparkles,
+    Trash2,
+    X,
+} from 'lucide-react';
 import imageCompression from 'browser-image-compression';
+import api from '../service/api';
+import LocationPicker from '../components/LocationPicker';
+
+const MAX_IMAGES = 5;
 
 const CreateItemPage = () => {
     const { user } = useAuth();
+    const { t, language } = useLanguage();
     const navigate = useNavigate();
-    const { id } = useParams();
-    const isEditMode = !!id;
-
-    // Route Protection: Kick out unauthenticated users
-    useEffect(() => {
-        if (!user) {
-            navigate('/login');
-        }
-    }, [user, navigate]);
-
-
-    // Form States
-    const [status, setStatus] = useState('LOST');
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [category, setCategory] = useState('');
-    const [dateLost, setDateLost] = useState('');
-    const [locationLost, setLocationLost] = useState(''); // Text address
-    const [contactInfo, setContactInfo] = useState('');
-    const [coordinates, setCoordinates] = useState({ lat: null, lng: null });
-    
-    const [dbCategories, setDbCategories] = useState([]);
-    // Image Upload State
-    const [images, setImages] = useState([]);
-    const [imagePreviews, setImagePreviews] = useState([]);
-
-    // Camera State
-    const [showCamera, setShowCamera] = useState(false);
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
     const streamRef = useRef(null);
 
-    // UI States
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(false);
+    const STEP_LABELS = [
+      t('createItem.step1'),
+      t('createItem.step2'),
+      t('createItem.step3'),
+      t('createItem.step4'),
+      t('createItem.step5'),
+    ];
 
-    // Handle Image Selection
-    const appendSelectedFiles = async (fileList) => {
-        const files = Array.from(fileList || []);
-        if (files.length === 0) return;
+    const [currentStep, setCurrentStep] = useState(1);
+    const [imageFiles, setImageFiles] = useState([]);
+    const [imagePreviews, setImagePreviews] = useState([]);
+    const [showCamera, setShowCamera] = useState(false);
+    const [aiAnalyzing, setAiAnalyzing] = useState(false);
+    const [suggestedCategories, setSuggestedCategories] = useState([]);
+    const [isSafe, setIsSafe] = useState(true);
+    const [rejectReason, setRejectReason] = useState(null);
 
-        if (files.length + imagePreviews.length > 5) {
-            setError("Maksimal 5 ta rasm yuklash mumkin.");
-            return;
-        }
+    const [status, setStatus] = useState('LOST');
+    const [title, setTitle] = useState('');
+    const [selectedCategories, setSelectedCategories] = useState([]);
+    const [dateLost, setDateLost] = useState('');
+    const [locationLost, setLocationLost] = useState('');
+    const [isEditingAddress, setIsEditingAddress] = useState(false);
+    const [coordinates, setCoordinates] = useState({ lat: null, lng: null });
+    const [contactInfo, setContactInfo] = useState('');
 
-        const options = {
-            maxSizeMB: 1, // Compress to ~1MB
-            maxWidthOrHeight: 1280, // Resize up to 1280px
-            useWebWorker: true
-        };
+    const reverseGeocodeCoordinates = async (coords) => {
+        if (!coords?.lat || !coords?.lng || locationLost || isEditingAddress) return;
 
         try {
-            const compressedFiles = await Promise.all(
-                files.map(async (file) => {
-                    console.log(`📸 Original rasm hajmi: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
-                    
-                    const compFile = await imageCompression(file, options);
-                    
-                    console.log(`📉 Qisqartirilgan rasm hajmi: ${(compFile.size / 1024 / 1024).toFixed(2)} MB`);
-                    
-                    // browser-image-compression sometimes drops the filename/File type on older browsers, ensure it's a File
-                    return new File([compFile], file.name || `photo_${Date.now()}.jpg`, { type: compFile.type });
-                })
+            const response = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?lat=${coords.lat}&lon=${coords.lng}&format=jsonv2&accept-language=${language}`
             );
+            const data = await response.json();
+            if (data) {
+                const street = data.address?.road || data.address?.pedestrian || data.address?.suburb || data.address?.neighbourhood || '';
+                const num = data.address?.house_number ? `${data.address.house_number}` : '';
+                const fullAddr = street || num ? `${street} ${num}`.trim() : data.display_name || '';
+                if (fullAddr) {
+                    setLocationLost(fullAddr);
+                }
+            }
+        } catch (err) {
+            console.error('Reverse geocoding failed:', err);
+        }
+    };
+    const [description, setDescription] = useState('');
 
-            setImages(prev => [...prev, ...compressedFiles]);
+    const [loading, setLoading] = useState(false);
+    const [locating, setLocating] = useState(false);
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(false);
+    const [createdItem, setCreatedItem] = useState(null);
 
-            // Create local URLs to show previews to the user
-            const newPreviews = compressedFiles.map(file => URL.createObjectURL(file));
-            setImagePreviews(prev => [...prev, ...newPreviews]);
-        } catch (error) {
-            console.error("Rasm qisqartirishda xatolik yuz berdi:", error);
-            setError("Kechirasiz, bu rasm formatini qayta ishlab bo'lmadi (masalan, qo'llab-quvvatlanmaydigan DNG yoki HEIC fail). Iltimos, standart JPG yoki PNG formatidagi rasmni tanlang.");
+    const getCurrentLocation = async () => {
+        setLocating(true);
+        setError(null);
+
+        if ('geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const { latitude, longitude } = position.coords;
+                    setCoordinates({ lat: latitude, lng: longitude });
+                    console.log('Geolocation success:', latitude, longitude);
+
+                    try {
+                        const response = await fetch(
+                            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=jsonv2&accept-language=uz`
+                        );
+                        const data = await response.json();
+
+                        if (data && data.address) {
+                            const street =
+                                data.address.road ||
+                                data.address.pedestrian ||
+                                data.address.suburb ||
+                                data.address.neighbourhood ||
+                                '';
+                            const num = data.address.house_number ? `${data.address.house_number}` : '';
+                            const fullAddr = `${street} ${num}`.trim();
+                            if (fullAddr) {
+                                setLocationLost(fullAddr);
+                                setIsEditingAddress(false);
+                            }
+                        }
+                    } catch (err) {
+                        console.error('Reverse geocoding error:', err);
+                    }
+
+                    setLocating(false);
+                },
+                (error) => {
+                    console.error('Geolocation error:', error.message, error.code);
+                    const errorMessages = {
+                        1: t('createItem.geolocationPermissionDenied'),
+                        2: t('createItem.geolocationNoSignal'),
+                        3: t('createItem.geolocationTimeout'),
+                    };
+                    setError(errorMessages[error.code] || t('createItem.geolocationNotSupported'));
+                    setLocating(false);
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
+        } else {
+            setError(t('createItem.geolocationNotSupported'));
+            setLocating(false);
         }
     };
 
-    const handleImageChange = (e) => {
-        appendSelectedFiles(e.target.files);
-        e.target.value = '';
+    useEffect(() => {
+        if (!user) navigate('/login');
+    }, [user, navigate]);
+
+    useEffect(() => {
+        return () => {
+            imagePreviews.forEach((url) => URL.revokeObjectURL(url));
+        };
+    }, [imagePreviews]);
+
+    const compressFiles = async (files) => {
+        const options = {
+            maxSizeMB: 1,
+            maxWidthOrHeight: 1280,
+            useWebWorker: true,
+        };
+
+        const selected = Array.from(files || []).slice(0, MAX_IMAGES);
+        if (!selected.length) return [];
+
+        const compressed = await Promise.all(
+            selected.map(async (file, index) => {
+                const blob = await imageCompression(file, options);
+                return new File([blob], file.name || `photo_${Date.now()}_${index}.jpg`, {
+                    type: blob.type,
+                });
+            })
+        );
+
+        return compressed;
     };
 
-    const handleCameraCapture = (e) => {
-        appendSelectedFiles(e.target.files);
-        e.target.value = '';
+    const analyzeNewImageFiles = async (files) => {
+        if (!files || files.length === 0) return { ok: true, suggestedCategories: [] };
+        setAiAnalyzing(true);
+        setError(null);
+
+        try {
+            let suggestedCategories = [];
+            for (const file of files) {
+                const formData = new FormData();
+                formData.append('image', file);
+                const response = await api.post('/api/items/analyze-image/', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                });
+
+                if (response.data?.is_safe === false) {
+                    setIsSafe(false);
+                    setRejectReason(response.data.reject_reason || 'Nomaʼlum sabab');
+                    setError(`Rasm rad etildi: ${response.data.reject_reason || 'Nomaʼlum sabab'}`);
+                    return { ok: false, suggestedCategories: [] };
+                }
+
+                if (!suggestedCategories.length && response.data?.suggested_categories?.length) {
+                    suggestedCategories = response.data.suggested_categories;
+                }
+            }
+
+            return { ok: true, suggestedCategories };
+        } catch (err) {
+            console.error(err);
+            setError(t('createItem.imageProcessingError'));
+            return { ok: false, suggestedCategories: [] };
+        } finally {
+            setAiAnalyzing(false);
+        }
+    };
+
+    const handleImageSelect = async (fileList) => {
+        try {
+            const files = await compressFiles(fileList);
+            if (!files.length) return;
+
+            const { ok, suggestedCategories: newSuggested } = await analyzeNewImageFiles(files);
+            if (!ok) return;
+
+            const mergedFiles = [...imageFiles, ...files].slice(0, MAX_IMAGES);
+            imagePreviews.forEach((url) => URL.revokeObjectURL(url));
+            const previews = mergedFiles.map((file) => URL.createObjectURL(file));
+
+            setImageFiles(mergedFiles);
+            setImagePreviews(previews);
+            setError(null);
+            setRejectReason(null);
+            setIsSafe(true);
+            if (newSuggested.length) setSuggestedCategories(newSuggested);
+        } catch (err) {
+            console.error(err);
+            setError(t('createItem.imageProcessingError'));
+        }
+    };
+
+    const appendCapturedImage = async (blob) => {
+        if (!blob) return;
+        const file = new File([blob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
+        const nextFiles = await compressFiles([file]);
+        if (!nextFiles.length) return;
+
+        const { ok, suggestedCategories: newSuggested } = await analyzeNewImageFiles(nextFiles);
+        if (!ok) return;
+
+        const mergedFiles = [...imageFiles, ...nextFiles].slice(0, MAX_IMAGES);
+        imagePreviews.forEach((url) => URL.revokeObjectURL(url));
+        const previews = mergedFiles.map((item) => URL.createObjectURL(item));
+
+        setImageFiles(mergedFiles);
+        setImagePreviews(previews);
+        setError(null);
+        setRejectReason(null);
+        setIsSafe(true);
+        if (newSuggested.length) setSuggestedCategories(newSuggested);
     };
 
     const startCamera = async () => {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: 'environment' } 
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment' },
             });
             streamRef.current = stream;
             setShowCamera(true);
         } catch (err) {
-            console.error("Error accessing camera:", err);
-            setError("Kameraga kirish imkoni bo'lmadi. Iltimos, ruxsat bering.");
+            console.error(err);
+            setError(t('createItem.cameraAccessDenied'));
         }
     };
 
     const stopCamera = () => {
         if (streamRef.current) {
-            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current.getTracks().forEach((track) => track.stop());
             streamRef.current = null;
         }
         setShowCamera(false);
     };
 
     const captureImage = () => {
-        if (videoRef.current && canvasRef.current) {
-            const video = videoRef.current;
-            const canvas = canvasRef.current;
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            canvas.toBlob((blob) => {
-                if (blob) {
-                    const file = new File([blob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
-                    appendSelectedFiles([file]);
-                    stopCamera();
-                }
-            }, 'image/jpeg', 0.8);
-        }
+        if (!videoRef.current || !canvasRef.current) return;
+        const video = videoRef.current;
+        const canvas = canvasRef.current;
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob(async (blob) => {
+            if (blob) {
+                await appendCapturedImage(blob);
+                stopCamera();
+            }
+        }, 'image/jpeg', 0.82);
     };
 
     useEffect(() => {
@@ -145,408 +300,690 @@ const CreateItemPage = () => {
         }
     }, [showCamera]);
 
-
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                // Adjust the URL if your Django router has a different path
-                const response = await api.get('/api/categories/'); 
-                
-                // DRF usually returns an array directly, or inside 'results' if paginated
-                // If you use pagination, it might be response.data.results
-                setDbCategories(response.data.results || response.data); 
-            } catch (err) {
-                console.error("Toifalarni yuklashda xatolik:", err);
-            }
-        };
-
-        fetchCategories();
-    }, []);
-
-    useEffect(() => {
-        if (!isEditMode) return;
-
-        const fetchItem = async () => {
-            try {
-                const response = await api.get(`/api/items/${id}/`);
-                const item = response.data;
-
-                setStatus(item.status || 'LOST');
-                setTitle(item.title || '');
-                setDescription(item.description || '');
-                setCategory(item.category || '');
-                setDateLost(item.date_lost_or_found || '');
-                setLocationLost(item.location_address || '');
-                setContactInfo(item.contact_info || '');
-
-                if (item.latitude && item.longitude) {
-                    setCoordinates({ lat: item.latitude, lng: item.longitude });
-                }
-
-                if (item.images && item.images.length > 0) {
-                    const existingPreviews = item.images
-                        .map((img) => img.image)
-                        .filter(Boolean)
-                        .map((url) => (url.startsWith('http') ? url : `http://127.0.0.1:8000${url}`));
-                    setImagePreviews(existingPreviews);
-                }
-            } catch (err) {
-                console.error("E'lonni yuklashda xatolik:", err);
-                setError("E'lon ma'lumotlarini yuklab bo'lmadi.");
-            }
-        };
-
-        fetchItem();
-    }, [id, isEditMode]);
-
-    // Remove an image before uploading
     const removeImage = (index) => {
-        setImages(images.filter((_, i) => i !== index));
-        setImagePreviews(imagePreviews.filter((_, i) => i !== index));
+        const nextFiles = imageFiles.filter((_, i) => i !== index);
+        const nextPreviews = imagePreviews.filter((_, i) => i !== index);
+        setImageFiles(nextFiles);
+        setImagePreviews(nextPreviews);
+        if (!nextFiles.length) {
+            setSuggestedCategories([]);
+            setIsSafe(true);
+            setRejectReason(null);
+        }
     };
 
-    // Handle Form Submit (The FormData Magic)
+    const toggleCategory = (category) => {
+        setSelectedCategories((prev) =>
+            prev.includes(category) ? prev.filter((item) => item !== category) : [...prev, category]
+        );
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
 
-        // 1. Create the cardboard box
         const formData = new FormData();
-        
-        // 2. Put text data inside
         formData.append('status', status);
-        formData.append('title', title);
+        formData.append('title', title.trim());
         formData.append('description', description);
-        formData.append('category', category); // Sends the ID of the category
         formData.append('date_lost_or_found', dateLost);
         formData.append('location_address', locationLost);
         formData.append('contact_info', contactInfo);
-        
-        // Only append coordinates if the user dropped a pin
+        formData.append('suggested_categories', selectedCategories.join(','));
+
+        imageFiles.forEach((file) => {
+            formData.append('uploaded_images', file);
+        });
+
         if (coordinates.lat && coordinates.lng) {
             formData.append('latitude', coordinates.lat);
             formData.append('longitude', coordinates.lng);
         }
 
-        // 3. Put physical image files inside
-        images.forEach((image) => {
-            // Must match the 'uploaded_images' name in your Django serializer exactly
-            formData.append('uploaded_images', image); 
-        });
-
         try {
-            // Send to Django (Assuming your endpoint is /api/items/)
-            if (isEditMode) {
-                await api.put(`/api/items/${id}/`, formData, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
-            } else {
-                await api.post('/api/items/', formData, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
-            }
-            
+            const response = await api.post('/api/items/', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            setCreatedItem(response.data);
             setSuccess(true);
-            // Redirect to their dashboard or the feed after 2 seconds
-            setTimeout(() => navigate('/'), 2000);
-            
         } catch (err) {
             console.error(err);
-            if (err.response && err.response.data) {
-                const backendErrors = err.response.data;
-                if (backendErrors.title) {
-                    setError(backendErrors.title[0]);
-                } else if (backendErrors.description) {
-                    setError(backendErrors.description[0]);
-                } else if (backendErrors.category) {
-                    setError(backendErrors.category[0]);
-                } else if (backendErrors.date_lost_or_found) {
-                    setError(backendErrors.date_lost_or_found[0]);
-                } else if (backendErrors.location_address) {
-                    setError(backendErrors.location_address[0]);
-                } else if (backendErrors.contact_info) {
-                    setError(backendErrors.contact_info[0]);
-                } else if (backendErrors.uploaded_images || backendErrors.images || backendErrors.image) {
-                    setError("Rasm yuklashda xatolik: Rasm formati noto'g'ri. Iltimos, faqat JPG yoki PNG formatidagi rasmlarni yuklang.");
-                } else {
-                    setError("Noma'lum xatolik yuz berdi. Iltimos, ma'lumotlarni tekshirib qayta urinib ko'ring.");
-                }
+            const backendErrors = err.response?.data;
+            if (backendErrors) {
+                setError(Object.values(backendErrors).flat().join(', ') || 'Xatolik yuz berdi.');
+            } else {
+                setError('Xatolik yuz berdi.');
             }
         } finally {
             setLoading(false);
         }
     };
 
-    if (!user) return null; // Prevent flicker before redirect
+    if (!user) return null;
+
+    const postedImages =
+        createdItem?.images?.map((img) => img.image).filter(Boolean) ||
+        (imagePreviews.length ? imagePreviews : []);
 
     return (
-        <div className="min-h-screen bg-white py-4 sm:py-8 lg:py-10 px-3 sm:px-6 lg:px-8 font-sans">
-            <div className="max-w-2xl mx-auto bg-white sm:shadow-lg sm:border sm:border-slate-100 rounded-xl sm:rounded-2xl p-4 sm:p-8 lg:p-10">
-                
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-2">{isEditMode ? "E'lonni tahrirlash" : "E'lon joylash"}</h1>
-                <p className="text-sm sm:text-base text-slate-500 mb-6 sm:mb-8">Yo'qotgan yoki topib olgan buyumingiz haqida ma'lumot qoldiring.</p>
+        <div className="min-h-screen bg-slate-50 px-3 py-3 sm:px-6 sm:py-6 lg:px-8">
+            <div className="mx-auto max-w-4xl">
+                {!success && (
+                    <div className="mb-4 rounded-2xl border border-blue-100 bg-white/90 px-4 py-3 shadow-sm backdrop-blur sm:px-6">
+                        <div className="mb-2 flex items-center justify-between gap-3">
+                            <div>
+                                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-500">{t('createItem.title')}</p>
+                                <h1 className="text-lg font-extrabold tracking-tight text-slate-900 sm:text-xl">
+                                    {t('createItem.uploadSubtitle')}
+                                </h1>
+                            </div>
+                            <div className="hidden rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 sm:block">
+                                {currentStep}/{STEP_LABELS.length}
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            {STEP_LABELS.map((label, index) => {
+                                const step = index + 1;
+                                const active = step === currentStep;
+                                const done = step < currentStep;
+                                return (
+                                    <button
+                                        type="button"
+                                        key={label}
+                                        onClick={() => step < currentStep && setCurrentStep(step)}
+                                        className={`flex min-w-0 flex-1 items-center gap-2 rounded-full border px-3 py-2 text-left text-xs font-semibold transition ${
+                                            active
+                                                ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                                : done
+                                                ? 'border-blue-200 bg-white text-blue-600 hover:border-blue-300'
+                                                : 'border-slate-200 bg-white text-slate-400'
+                                        } ${step < currentStep ? 'cursor-pointer' : 'cursor-default'}`}
+                                    >
+                                        <span
+                                            className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
+                                                active
+                                                    ? 'bg-blue-500 text-white'
+                                                    : done
+                                                    ? 'bg-blue-100 text-blue-700'
+                                                    : 'bg-slate-100 text-slate-400'
+                                            }`}
+                                        >
+                                            {done ? '✓' : step}
+                                        </span>
+                                        <span className="hidden truncate sm:block">{label}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
 
                 {error && (
-                    <div className="mb-6 p-4 bg-red-50 rounded-xl flex items-start gap-3 border border-red-100">
-                        <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
-                        <p className="text-sm text-red-600 font-medium">{error}</p>
-                    </div>
-                )}
-
-                {success && (
-                    <div className="mb-6 p-4 bg-green-50 rounded-xl flex items-start gap-3 border border-green-100 flex-col">
+                    <div className="mb-4 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-blue-800 shadow-sm">
                         <div className="flex items-start gap-3">
-                            <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                            <p className="text-sm text-green-700 font-medium">{isEditMode ? "E'lon muvaffaqiyatli yangilandi! Yo'naltirilmoqda..." : "E'lon muvaffaqiyatli joylandi! Yo'naltirilmoqda..."}</p>
-                        </div>
-                        <div className="flex items-start gap-3">
-                            <Sparkles className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
-                            <p className="text-sm text-blue-700 font-medium">AI tizimimiz orqali e'loningiz toifasi avtomatik ravishda tekshiriladi va kerak bo'lsa yangilanadi!</p>
+                            <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600" />
+                            <p className="text-sm font-medium leading-6">{error}</p>
                         </div>
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
-                    
-                    {/* LOST vs FOUND Toggle */}
-                    <div className="flex p-1 bg-[#F3F4F6] rounded-xl mb-4 sm:mb-6">
-                        <button
-                            type="button"
-                            onClick={() => setStatus('LOST')}
-                            className={`flex-1 py-2.5 sm:py-3 text-xs sm:text-sm font-bold rounded-lg transition-all ${status === 'LOST' ? 'bg-white text-red-500 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                        >
-                            Yo'qotdim (Lost)
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setStatus('FOUND')}
-                            className={`flex-1 py-2.5 sm:py-3 text-xs sm:text-sm font-bold rounded-lg transition-all ${status === 'FOUND' ? 'bg-white text-green-500 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                        >
-                            Topib oldim (Found)
-                        </button>
-                    </div>
-
-                    {/* Title Input */}
-                    <div className="relative group">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <Tag className="h-5 w-5 text-slate-400 group-focus-within:text-[#1E85FF] transition-colors" />
-                        </div>
-                        <div className="bg-[#F3F4F6] rounded-xl px-4 pt-2 pb-2 pl-12 border border-transparent focus-within:border-[#1E85FF] focus-within:bg-white transition-all">
-                            <label className="block text-xs font-medium text-slate-500 mb-0.5">Sarlavha</label>
-                            <input
-                                type="text"
-                                required
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
-                                className="block w-full bg-transparent border-none p-0 text-slate-900 placeholder-slate-400 focus:ring-0 sm:text-base font-bold"
-                                placeholder={status === 'LOST' ? "Masalan: Qora iPhone 13 Pro" : "Masalan: Qora hamyon topib oldim"}
-                            />
-                        </div>
-                    </div>
-
-                    {/* Category & Date Row */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {/* Category Dropdown */}
-                        <div className="bg-[#F3F4F6] rounded-xl px-4 py-3 border border-transparent focus-within:border-[#1E85FF] focus-within:bg-white transition-all relative">
-                            <label className="block text-xs font-medium text-slate-500 mb-1 flex items-center gap-1">
-                                Toifa
-                                <span className="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full font-semibold flex items-center gap-1">
-                                    <Sparkles className="w-3 h-3" /> AI Yordamida
-                                </span>
-                            </label>
-                            {/* <select
-                                required
-                                value={category}
-                                onChange={(e) => setCategory(e.target.value)}
-                                className="block w-full bg-transparent border-none p-0 text-slate-900 focus:ring-0 sm:text-sm font-bold cursor-pointer appearance-none"
-                            >
-                                <option value="" disabled>Toifani tanlang (yoki AI ga qo'yib bering)</option>
-                                {dbCategories.map(cat => (
-                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
-                                ))}
-                            </select> */}
-                            <p className="text-[10px] text-slate-400 mt-1">Rasmingiz asosida AI eng mos toifani avtomatik aniqlaydi.</p>
-                        </div>
-
-                        {/* Date Input */}
-                        <div className="relative group">
-                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <Calendar className="h-5 w-5 text-slate-400 group-focus-within:text-[#1E85FF] transition-colors" />
+                {success && createdItem && (
+                    <div className="overflow-hidden rounded-3xl border border-blue-100 bg-white shadow-[0_20px_60px_rgba(30,133,255,0.10)]">
+                        <div className="border-b border-blue-50 bg-gradient-to-br from-blue-50 to-white px-4 py-8 text-center sm:px-6">
+                            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-blue-100 bg-white shadow-sm">
+                                <CheckCircle2 className="h-8 w-8 text-blue-500" />
                             </div>
-                            <div className="bg-[#F3F4F6] rounded-xl px-4 pt-2 pb-2 pl-12 border border-transparent focus-within:border-[#1E85FF] focus-within:bg-white transition-all h-full">
-                                <label className="block text-xs font-medium text-slate-500 mb-0.5">Sana (Ixtiyoriy)</label>
+                            <h2 className="text-2xl font-extrabold tracking-tight text-slate-900">{t('createItem.postingSuccessTitle')}</h2>
+                            <p className="mt-2 text-sm text-slate-500">{t('createItem.postingSuccessText')}</p>
+                        </div>
+
+                        <div className="grid gap-0 lg:grid-cols-[1.1fr_0.9fr]">
+                            <div className="space-y-4 p-4 sm:p-6">
+                                {postedImages.length > 0 && (
+                                    <div className={`grid gap-3 ${postedImages.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                                        {postedImages.slice(0, MAX_IMAGES).map((img, index) => (
+                                            <img
+                                                key={index}
+                                                src={img}
+                                                alt={createdItem.title}
+                                                className="h-44 w-full rounded-2xl border border-blue-100 object-cover shadow-sm"
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+
+                                <div className="grid gap-3 sm:grid-cols-2">
+                                    <div className="rounded-2xl bg-slate-50 p-4">
+                                        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">{t('createItem.statusLabel')}</p>
+                                        <p className="mt-1 text-base font-bold text-slate-900">
+                                            {createdItem.status === 'LOST' ? t('createItem.statusLostText') : t('createItem.statusFoundText')}
+                                        </p>
+                                    </div>
+                                    <div className="rounded-2xl bg-slate-50 p-4">
+                                        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">{t('createItem.locationLabel')}</p>
+                                        <p className="mt-1 line-clamp-2 text-sm font-semibold text-slate-700">
+                                            {createdItem.location_address || locationLost}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {createdItem.categories?.length > 0 && (
+                                    <div className="rounded-2xl border border-blue-100 bg-blue-50/70 p-4">
+                                        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-blue-500">{t('createItem.categoriesLabel')}</p>
+                                        <div className="mt-3 flex flex-wrap gap-2">
+                                            {createdItem.categories.map((cat) => (
+                                                <span key={cat.id} className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-blue-700 shadow-sm">
+                                                    {getCategoryDisplayName(cat, language)}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="border-t border-blue-50 bg-slate-50/60 p-4 sm:border-l sm:border-t-0 sm:p-6">
+                                <div className="space-y-4">
+                                    <DetailRow label={t('createItem.titleLabel')} value={createdItem.title} />
+                                    {createdItem.date_lost_or_found && (
+                                        <DetailRow
+                                            label={t('createItem.dateLabel')}
+                                            value={new Date(createdItem.date_lost_or_found).toLocaleDateString('uz-UZ')}
+                                        />
+                                    )}
+                                    {createdItem.contact_info && <DetailRow label={t('createItem.contactLabel')} value={createdItem.contact_info} />}
+                                    {createdItem.description && <DetailRow label={t('createItem.descriptionLabel')} value={createdItem.description} />}
+                                </div>
+
+                                <div className="mt-6 grid gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate(`/items/${createdItem.id}`)}
+                                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-500 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-600"
+                                    >
+                                        {t('createItem.viewItemButton')} <ArrowRight className="h-4 w-4" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate('/')}
+                                        className="inline-flex items-center justify-center rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm font-bold text-blue-700 transition hover:bg-blue-50"
+                                    >
+                                        {t('createItem.homePageButton')}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {!success && currentStep === 1 && (
+                    <div className="overflow-hidden rounded-3xl border border-blue-100 bg-white shadow-[0_20px_60px_rgba(30,133,255,0.08)]">
+                        <div className="border-b border-blue-50 px-4 py-4 sm:px-6">
+                                <p className="text-lg font-extrabold tracking-tight text-slate-900">{t('createItem.uploadSectionTitle')}</p>
+                                <p className="mt-1 text-sm text-slate-500">{t('createItem.uploadSectionSubtitle')}</p>
+                        </div>
+
+                        <div className="grid gap-4 p-4 sm:p-6 lg:grid-cols-[1.1fr_0.9fr]">
+                            <div className="space-y-4">
+                                <div className="rounded-2xl border border-dashed border-blue-200 bg-blue-50/50 p-4">
+                                    {imagePreviews.length > 0 ? (
+                                        <div className="space-y-3">
+                                            <div className={`grid gap-3 ${imagePreviews.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                                                {imagePreviews.map((preview, index) => (
+                                                    <div key={preview} className="relative overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-sm">
+                                                        <img src={preview} alt={`Preview ${index + 1}`} className="h-44 w-full object-cover" />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeImage(index)}
+                                                            className="absolute right-2 top-2 rounded-full bg-white/95 p-1.5 text-slate-600 shadow-sm transition hover:bg-blue-500 hover:text-white"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div className="flex flex-wrap gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={startCamera}
+                                                    className="inline-flex items-center gap-2 rounded-xl border border-blue-100 bg-white px-3 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50"
+                                                >
+                                                    <CameraIcon className="h-4 w-4" /> {t('createItem.camera')}
+                                                </button>
+                                                <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-blue-500 px-3 py-2 text-sm font-semibold text-white transition hover:bg-blue-600">
+                                                    <Plus className="h-4 w-4" /> {t('createItem.addPhoto')}
+                                                    <input
+                                                        type="file"
+                                                        accept="image/jpeg,image/png,image/webp"
+                                                        multiple
+                                                        className="hidden"
+                                                        onChange={(e) => handleImageSelect(e.target.files)}
+                                                    />
+                                                </label>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <label className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-blue-200 bg-white px-4 py-10 text-center transition hover:border-blue-400 hover:bg-blue-50/70">
+                                            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+                                                <Camera className="h-6 w-6" />
+                                            </div>
+                                            <p className="text-base font-bold text-slate-900">{t('createItem.uploadHeading')}</p>
+                                            <p className="mt-1 text-sm text-slate-500">{t('createItem.imageFormats')}</p>
+                                            <div className="mt-4 flex items-center gap-2 rounded-full bg-blue-500 px-4 py-2 text-sm font-semibold text-white">
+                                                <Plus className="h-4 w-4" /> {t('createItem.uploadButton')}
+                                            </div>
+                                            <input
+                                                type="file"
+                                                accept="image/jpeg,image/png,image/webp"
+                                                multiple
+                                                className="hidden"
+                                                onChange={(e) => handleImageSelect(e.target.files)}
+                                            />
+                                        </label>
+                                    )}
+                                </div>
+
+                                {aiAnalyzing ? (
+                                    <div className="flex items-center gap-2 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-700">
+                                        <Loader2 className="h-4 w-4 animate-spin" /> {t('createItem.analyzing')}
+                                    </div>
+                                ) : rejectReason ? (
+                                    <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+                                        {rejectReason}
+                                    </div>
+                                ) : isSafe && imagePreviews.length > 0 ? (
+                                    <div className="flex items-center gap-2 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-700">
+                                        <CheckCircle2 className="h-4 w-4" /> {t('createItem.aiSafe')}
+                                    </div>
+                                ) : null}
+                            </div>
+
+                            <div className="space-y-4 rounded-2xl bg-slate-50 p-4 sm:p-5">
+                                <div>
+                                    <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">{t('createItem.statusLabel')}</p>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setStatus('LOST')}
+                                            className={`rounded-2xl border px-3 py-3 text-sm font-bold transition ${
+                                                status === 'LOST'
+                                                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                                    : 'border-slate-200 bg-white text-slate-600 hover:border-blue-200'
+                                            }`}
+                                        >
+                                            {t('createItem.lostStatus')}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setStatus('FOUND')}
+                                            className={`rounded-2xl border px-3 py-3 text-sm font-bold transition ${
+                                                status === 'FOUND'
+                                                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                                    : 'border-slate-200 bg-white text-slate-600 hover:border-blue-200'
+                                            }`}
+                                        >
+                                            {t('createItem.foundStatus')}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="rounded-2xl border border-blue-100 bg-white px-4 py-3 text-sm text-slate-600">
+                                    <Sparkles className="mb-2 h-4 w-4 text-blue-500" />
+                                    {t('createItem.aiHelpText')}
+                                </div>
+
+                                <div className="flex gap-3 pt-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate('/')}
+                                        className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50"
+                                    >
+                                        {t('createItem.cancel')}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setCurrentStep(2)}
+                                        className="flex-1 rounded-2xl bg-blue-500 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-600"
+                                    >
+                                        {t('createItem.next')} <ArrowRight className="ml-1 inline h-4 w-4" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {!success && currentStep === 2 && (
+                    <div className="overflow-hidden rounded-3xl border border-blue-100 bg-white shadow-[0_20px_60px_rgba(30,133,255,0.08)]">
+                        <div className="border-b border-blue-50 px-4 py-4 sm:px-6">
+                                <p className="text-lg font-extrabold tracking-tight text-slate-900">{t('createItem.titleSectionTitle')}</p>
+                                <p className="mt-1 text-sm text-slate-500">{t('createItem.titleSectionSubtitle')}</p>
+                        </div>
+
+                        <div className="grid gap-4 p-4 sm:p-6">
+                            <div>
+                                <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400">{t('createItem.itemTitle')}</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                    placeholder={status === 'LOST' ? t('createItem.titlePlaceholderLost') : t('createItem.titlePlaceholderFound')}
+                                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                                />
+                            </div>
+
+                            <div>
+                                <div className="mb-2 flex items-center gap-2">
+                                    <Sparkles className="h-4 w-4 text-blue-500" />
+                                    <label className="block text-xs font-bold uppercase tracking-[0.18em] text-slate-400">{t('createItem.aiHelpText')}</label>
+                                </div>
+                                {suggestedCategories.length > 0 ? (
+                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                        {suggestedCategories.map((cat) => (
+                                            <button
+                                                type="button"
+                                                key={cat}
+                                                onClick={() => toggleCategory(cat)}
+                                                className={`rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition ${
+                                                    selectedCategories.includes(cat)
+                                                        ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                                        : 'border-slate-200 bg-white text-slate-600 hover:border-blue-200 hover:bg-blue-50'
+                                                }`}
+                                            >
+                                                <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-md border border-current text-[10px]">
+                                                    {selectedCategories.includes(cat) ? '✓' : ''}
+                                                </span>
+                                                {cat}
+                                            </button>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="rounded-2xl border border-dashed border-blue-100 bg-blue-50 px-4 py-4 text-sm text-blue-700">
+                                        {t('createItem.noAICategorySuggestions')}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 border-t border-blue-50 bg-slate-50/60 px-4 py-4 sm:px-6">
+                            <button
+                                type="button"
+                                onClick={() => setCurrentStep(1)}
+                                className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50"
+                            >
+                                <ArrowLeft className="mr-1 inline h-4 w-4" /> {t('createItem.back')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setCurrentStep(3)}
+                                disabled={!title.trim()}
+                                className="flex-1 rounded-2xl bg-blue-500 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-blue-200"
+                            >
+                                {t('createItem.next')} <ArrowRight className="ml-1 inline h-4 w-4" />
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {!success && currentStep === 3 && (
+                    <div className="overflow-hidden rounded-3xl border border-blue-100 bg-white shadow-[0_20px_60px_rgba(30,133,255,0.08)]">
+                        <div className="border-b border-blue-50 px-4 py-4 sm:px-6">
+                            <p className="text-lg font-extrabold tracking-tight text-slate-900">{t('createItem.locationSectionTitle')}</p>
+                            <p className="mt-1 text-sm text-slate-500">{t('createItem.locationSectionSubtitle')}</p>
+                        </div>
+
+                        <div className="grid gap-4 p-4 sm:p-6 lg:grid-cols-2">
+                            <div>
+                                <label className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+                                    <Calendar className="h-4 w-4 text-blue-500" /> Sana
+                                </label>
                                 <input
                                     type="date"
                                     value={dateLost}
                                     onChange={(e) => setDateLost(e.target.value)}
-                                    className="block w-full bg-transparent border-none p-0 text-slate-900 focus:ring-0 sm:text-sm font-bold"
+                                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
                                 />
                             </div>
-                        </div>
-                    </div>
 
-                    {/* Description Textarea */}
-                    <div className="relative group">
-                        <div className="absolute top-4 left-0 pl-4 flex items-start pointer-events-none">
-                            <AlignLeft className="h-5 w-5 text-slate-400 group-focus-within:text-[#1E85FF] transition-colors" />
-                        </div>
-                        <div className="bg-[#F3F4F6] rounded-xl px-4 pt-2 pb-2 pl-12 border border-transparent focus-within:border-[#1E85FF] focus-within:bg-white transition-all">
-                            <label className="block text-xs font-medium text-slate-500 mb-0.5">Batafsil ma'lumot (Ixtiyoriy)</label>
-                            <textarea
-                                rows="3"
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                                className="block w-full bg-transparent border-none p-0 text-slate-900 placeholder-slate-400 focus:ring-0 sm:text-sm font-medium resize-none"
-                                placeholder="Rangi, chiziqlari yoki boshqa o'ziga xos belgilari..."
-                            />
-                        </div>
-                    </div>
-
-                    {/* Location Address (Text) */}
-                    <div className="relative group">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <MapPin className="h-5 w-5 text-slate-400 group-focus-within:text-[#1E85FF] transition-colors" />
-                        </div>
-                        <div className="bg-[#F3F4F6] rounded-xl px-4 pt-2 pb-2 pl-12 border border-transparent focus-within:border-[#1E85FF] focus-within:bg-white transition-all">
-                            <label className="block text-xs font-medium text-slate-500 mb-0.5">Mo'ljal</label>
-                            <input
-                                type="text"
-                                required
-                                value={locationLost}
-                                onChange={(e) => setLocationLost(e.target.value)}
-                                className="block w-full bg-transparent border-none p-0 text-slate-900 placeholder-slate-400 focus:ring-0 sm:text-sm font-bold"
-                                placeholder="Masalan: Chilonzor metro bekati yonida"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Interactive Map Component */}
-                    <div className="space-y-2">
-                        <label className="block text-sm font-bold text-slate-900">Xaritadan aniq joyni belgilang (Ixtiyoriy)</label>
-                        <LocationPicker onLocationSelect={(coords) => setCoordinates(coords)} />
-                    </div>
-
-                    {/* Contact Info */}
-                    <div className="relative group">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <Phone className="h-5 w-5 text-slate-400 group-focus-within:text-[#1E85FF] transition-colors" />
-                        </div>
-                        <div className="bg-[#F3F4F6] rounded-xl px-4 pt-2 pb-2 pl-12 border border-transparent focus-within:border-[#1E85FF] focus-within:bg-white transition-all">
-                            <label className="block text-xs font-medium text-slate-500 mb-0.5">Aloqa uchun (Ixtiyoriy)</label>
-                            <input
-                                type="text"
-                                value={contactInfo}
-                                onChange={(e) => setContactInfo(e.target.value)}
-                                className="block w-full bg-transparent border-none p-0 text-slate-900 placeholder-slate-400 focus:ring-0 sm:text-sm font-bold"
-                                placeholder="Telefon raqam yoki Telegram username"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Image Upload Zone */}
-                    <div className="space-y-3">
-                        <label className="block text-sm font-bold text-slate-900">Rasmlar (Maks. 5 ta)</label>
-                        
-                        <div className="flex flex-wrap gap-3">
-                            {/* Previews */}
-                            {imagePreviews.map((preview, index) => (
-                                <div key={index} className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
-                                    <img src={preview} alt="Preview" className="w-full h-full object-cover" />
-                                    <button
-                                        type="button"
-                                        onClick={() => removeImage(index)}
-                                        className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 hover:bg-red-500 transition-colors"
-                                    >
-                                        <X className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            ))}
-
-                            {/* Upload Button */}
-                            {imagePreviews.length < 5 && (
-                                <>
-                                    <label htmlFor="gallery-upload" className="w-20 h-20 sm:w-24 sm:h-24 flex flex-col items-center justify-center bg-[#F3F4F6] border-2 border-dashed border-slate-300 rounded-xl cursor-pointer hover:border-[#1E85FF] hover:bg-blue-50 transition-colors">
-                                        <Camera className="w-6 h-6 sm:w-8 sm:h-8 text-slate-400 mb-1" />
-                                        <span className="text-[11px] sm:text-xs font-medium text-slate-500">Galereya</span>
-                                        <input 
-                                            id="gallery-upload"
-                                            type="file" 
-                                            multiple 
-                                            accept="image/jpeg, image/png, image/webp" 
-                                            className="hidden" 
-                                            onChange={handleImageChange} 
-                                        />
+                            <div>
+                                <div className="mb-2 flex items-center justify-between gap-2">
+                                    <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+                                        <MapPin className="h-4 w-4 text-blue-500" /> Joylashuv
                                     </label>
-
-                                    <button 
-                                        type="button"
-                                        onClick={startCamera}
-                                        className="w-20 h-20 sm:w-24 sm:h-24 flex flex-col items-center justify-center bg-[#F3F4F6] border-2 border-dashed border-slate-300 rounded-xl cursor-pointer hover:border-[#1E85FF] hover:bg-blue-50 transition-colors"
-                                    >
-                                        <CameraIcon className="w-6 h-6 sm:w-8 sm:h-8 text-slate-400 mb-1" />
-                                        <span className="text-[11px] sm:text-xs font-medium text-slate-500">Kamera</span>
-                                    </button>
-                                </>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Submit Button */}
-                    <div className="pt-4 sm:pt-6">
-                        <button
-                            type="submit"
-                            disabled={loading || success}
-                            className="w-full flex items-center justify-center py-3 sm:py-4 px-4 border border-transparent rounded-xl shadow-sm text-sm sm:text-base font-bold text-white bg-[#1E85FF] hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50"
-                        >
-                            {loading ? (
-                                <>
-                                    <Loader2 className="w-5 h-5 mr-3 animate-spin" />
-                                    Joylanmoqda...
-                                </>
-                            ) : (
-                                isEditMode ? "E'lonni yangilash" : "E'lonni joylash"
-                            )}
-                        </button>
-                    </div>
-
-                    {/* Camera Modal */}
-                    {showCamera && (
-                        <div className="fixed inset-0 z-[9999] bg-black/90 flex flex-col items-center justify-center p-4">
-                            <div className="relative w-full max-w-md bg-black rounded-2xl overflow-hidden shadow-2xl">
-                                <button
-                                    type="button"
-                                    onClick={stopCamera}
-                                    className="absolute top-4 right-4 z-10 p-2 bg-black/50 text-white rounded-full hover:bg-white/20 transition-colors"
-                                >
-                                    <X className="w-6 h-6" />
-                                </button>
-                                
-                                <video 
-                                    ref={videoRef} 
-                                    autoPlay 
-                                    playsInline
-                                    className="w-full h-auto aspect-[3/4] object-cover bg-slate-900"
-                                />
-                                <canvas ref={canvasRef} className="hidden" />
-                                
-                                <div className="absolute bottom-6 left-0 right-0 flex justify-center">
                                     <button
                                         type="button"
-                                        onClick={captureImage}
-                                        className="w-16 h-16 bg-white rounded-full border-4 border-slate-300 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+                                        onClick={getCurrentLocation}
+                                        disabled={locating}
+                                        className="inline-flex items-center gap-1 rounded-full bg-blue-500 px-3 py-1 text-xs font-semibold text-white transition hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-blue-300"
                                     >
-                                        <div className="w-12 h-12 bg-white rounded-full border border-slate-200 shadow-sm" />
+                                        {locating ? (
+                                            <>
+                                                <Loader2 className="h-3 w-3 animate-spin" /> {t('createItem.locating')}
+                                            </>
+                                        ) : (
+                                            <>
+                                                <MapPin className="h-3 w-3" /> {t('createItem.useGPS')}
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                                <LocationPicker
+                                    onLocationSelect={(coords) => {
+                                        setCoordinates(coords);
+                                        reverseGeocodeCoordinates(coords);
+                                    }}
+                                    externalCoordinates={coordinates}
+                                    onAddressFound={(address) => {
+                                        if (!isEditingAddress) {
+                                            setLocationLost(address);
+                                        }
+                                    }}
+                                />
+                                <div className="mt-3">
+                                    <input
+                                        type="text"
+                                        value={locationLost}
+                                        onFocus={() => setIsEditingAddress(true)}
+                                        onBlur={() => setIsEditingAddress(false)}
+                                        onChange={(e) => setLocationLost(e.target.value)}
+                                        placeholder={t('createItem.locationPlaceholder')}
+                                        className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 border-t border-blue-50 bg-slate-50/60 px-4 py-4 sm:px-6">
+                            <button
+                                type="button"
+                                onClick={() => setCurrentStep(2)}
+                                className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50"
+                            >
+                                <ArrowLeft className="mr-1 inline h-4 w-4" /> {t('createItem.back')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setCurrentStep(4)}
+                                className="flex-1 rounded-2xl bg-blue-500 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-600"
+                            >
+                                {t('createItem.next')} <ArrowRight className="ml-1 inline h-4 w-4" />
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {!success && currentStep === 4 && (
+                    <div className="overflow-hidden rounded-3xl border border-blue-100 bg-white shadow-[0_20px_60px_rgba(30,133,255,0.08)]">
+                        <div className="border-b border-blue-50 px-4 py-4 sm:px-6">
+                            <p className="text-lg font-extrabold tracking-tight text-slate-900">{t('createItem.contactSectionTitle')}</p>
+                            <p className="mt-1 text-sm text-slate-500">{t('createItem.contactSectionSubtitle')}</p>
+                        </div>
+
+                        <div className="grid gap-4 p-4 sm:p-6 lg:grid-cols-2">
+                            <div>
+                                <label className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+                                    <Phone className="h-4 w-4 text-blue-500" /> {t('createItem.contactLabel')}
+                                </label>
+                                <input
+                                    type="text"
+                                    value={contactInfo}
+                                    onChange={(e) => setContactInfo(e.target.value)}
+                                    placeholder={t('createItem.contactPlaceholder')}
+                                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+                                    <AlignLeft className="h-4 w-4 text-blue-500" /> {t('createItem.descriptionLabel')}
+                                </label>
+                                <textarea
+                                    rows="4"
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    placeholder={t('createItem.descriptionPlaceholder')}
+                                    className="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 border-t border-blue-50 bg-slate-50/60 px-4 py-4 sm:px-6">
+                            <button
+                                type="button"
+                                onClick={() => setCurrentStep(3)}
+                                className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50"
+                            >
+                                <ArrowLeft className="mr-1 inline h-4 w-4" /> {t('createItem.back')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setCurrentStep(5)}
+                                className="flex-1 rounded-2xl bg-blue-500 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-600"
+                            >
+                                {t('createItem.reviewPostButton')} <ArrowRight className="ml-1 inline h-4 w-4" />
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {!success && currentStep === 5 && (
+                    <div className="overflow-hidden rounded-3xl border border-blue-100 bg-white shadow-[0_20px_60px_rgba(30,133,255,0.08)]">
+                        <div className="border-b border-blue-50 px-4 py-4 sm:px-6">
+                            <p className="text-lg font-extrabold tracking-tight text-slate-900">{t('createItem.reviewSectionTitle')}</p>
+                            <p className="mt-1 text-sm text-slate-500">{t('createItem.reviewSectionSubtitle')}</p>
+                        </div>
+
+                        <div className="grid gap-4 p-4 sm:p-6 lg:grid-cols-[1.1fr_0.9fr]">
+                            <div className="space-y-4">
+                                {imagePreviews.length > 0 && (
+                                    <div className={`grid gap-3 ${imagePreviews.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                                        {imagePreviews.map((preview, index) => (
+                                            <img
+                                                key={preview}
+                                                src={preview}
+                                                alt={`Preview ${index + 1}`}
+                                                className="h-36 w-full rounded-2xl border border-blue-100 object-cover shadow-sm"
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+
+                                <div className="grid gap-3 sm:grid-cols-2">
+                                    <ReviewCard label={t('createItem.statusLabel')} value={status === 'LOST' ? t('createItem.statusLostText') : t('createItem.statusFoundText')} />
+                                    <ReviewCard label={t('createItem.dateLabel')} value={dateLost || t('createItem.notSelected')} />
+                                    <ReviewCard label={t('createItem.locationLabel')} value={locationLost || t('createItem.notProvided')} className="sm:col-span-2" />
+                                </div>
+
+                                {selectedCategories.length > 0 && (
+                                    <div className="rounded-2xl border border-blue-100 bg-blue-50/70 p-4">
+                                        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-blue-500">{t('createItem.categoriesLabel')}</p>
+                                        <div className="mt-3 flex flex-wrap gap-2">
+                                            {selectedCategories.map((cat) => (
+                                                <span key={cat} className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-blue-700 shadow-sm">
+                                                    {cat}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="rounded-2xl bg-slate-50 p-4 sm:p-5">
+                                <div className="space-y-3">
+                                    {title && <ReviewCard label={t('createItem.titleLabel')} value={title} />}
+                                    {contactInfo && <ReviewCard label={t('createItem.contactLabel')} value={contactInfo} />}
+                                    {description && <ReviewCard label={t('createItem.descriptionLabel')} value={description} />}
+                                </div>
+
+                                <div className="mt-6 grid gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={handleSubmit}
+                                        disabled={loading}
+                                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-500 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-blue-200"
+                                    >
+                                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                                        {t('createItem.reviewPostButton')}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setCurrentStep(4)}
+                                        className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50"
+                                    >
+                                        <ArrowLeft className="mr-1 h-4 w-4" /> {t('createItem.back')}
                                     </button>
                                 </div>
                             </div>
                         </div>
-                    )}
-
-                </form>
+                    </div>
+                )}
             </div>
+
+            {showCamera && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/95 p-4">
+                    <div className="relative w-full max-w-md overflow-hidden rounded-3xl border border-blue-200 bg-slate-900 shadow-2xl">
+                        <button
+                            type="button"
+                            onClick={stopCamera}
+                            className="absolute right-3 top-3 z-10 rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20"
+                        >
+                            <X className="h-5 w-5" />
+                        </button>
+
+                        <video ref={videoRef} autoPlay playsInline className="aspect-[3/4] w-full object-cover" />
+                        <canvas ref={canvasRef} className="hidden" />
+
+                        <div className="absolute bottom-4 left-0 right-0 flex justify-center">
+                            <button
+                                type="button"
+                                onClick={captureImage}
+                                className="flex h-16 w-16 items-center justify-center rounded-full border-4 border-white bg-blue-500 shadow-lg shadow-blue-500/30 transition hover:scale-105 active:scale-95"
+                            >
+                                <div className="h-11 w-11 rounded-full border border-white/60 bg-blue-400" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
+
+const DetailRow = ({ label, value, className = '' }) => (
+    <div className={`flex justify-between py-3 ${className}`}>
+        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">{label}</p>
+        <p className="text-sm font-medium text-slate-800">{value}</p>
+    </div>
+);
+
+const ReviewCard = ({ label, value, className = '' }) => (
+    <div className={`rounded-2xl bg-white p-4 shadow-sm ring-1 ring-blue-100 ${className}`}>
+        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">{label}</p>
+        <p className="mt-1 text-sm font-semibold leading-6 text-slate-800">{value}</p>
+    </div>
+);
 
 export default CreateItemPage;

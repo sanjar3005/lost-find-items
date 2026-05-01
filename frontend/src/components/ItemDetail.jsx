@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Clock, Eye, Heart, MapPin, ChevronLeft, ChevronRight, Phone, MessageCircle, ArrowLeft } from 'lucide-react';
 import api from '../service/api';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -26,6 +27,7 @@ export default function ItemDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   // --- State ---
   const [item, setItem] = useState(null);
@@ -46,7 +48,7 @@ export default function ItemDetail() {
         setIsSaved(Boolean(response.data?.is_saved));
       } catch (err) {
         console.error(err);
-        setError("E'lon topilmadi yoki serverda xatolik yuz berdi.");
+        setError(t('itemDetail.itemNotFound'));
       } finally {
         setLoading(false);
       }
@@ -162,7 +164,7 @@ export default function ItemDetail() {
           className="flex items-center gap-2 text-slate-500 hover:text-[#3B82F6] mb-6 transition-colors font-medium w-fit"
         >
           <ArrowLeft size={20} />
-          Orqaga
+          {t('itemDetail.back')}
         </button>
 
         {/* Responsive layout: On mobile, details first, map second. On desktop, side by side. */}
@@ -234,7 +236,7 @@ export default function ItemDetail() {
                 </h1>
                 <div className="flex flex-wrap gap-2 mb-2 shrink-0 max-h-16 w-full sm:w-auto">
                   <div className="flex items-center gap-2 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap">
-                    <Clock size={16} /> Sana: {item.date_lost_or_found ? formatDateUz(item.date_lost_or_found) : "Noma'lum"}
+                    <Clock size={16} /> {t('itemDetail.dateLabel')} {item.date_lost_or_found ? formatDateUz(item.date_lost_or_found) : t('common.unknown')}
                   </div>
                   <button
                     onClick={handleToggleSaved}
@@ -242,21 +244,21 @@ export default function ItemDetail() {
                     style={{ minWidth: '100px' }}
                   >
                     <Heart size={16} className={isSaved ? 'fill-current' : ''} />
-                    {isSaved ? "Saqlangan" : "Saqlash"}
+                    {isSaved ? t('itemDetail.saved') : t('itemDetail.save')}
                   </button>
                 </div>
               </div>
               {/* Description */}
               <div className="mb-3">
                 <p className="text-slate-600 leading-relaxed text-base bg-slate-50 p-3 rounded-xl border border-slate-100">
-                  <span className="font-bold block mb-1">Batafsil ma'lumot:</span> 
-                  {item.description || <span className="text-slate-400 italic">Qo'shimcha ma'lumot kiritilmagan</span>}
+                  <span className="font-bold block mb-1">{t('itemDetail.detailsLabel')}</span> 
+                  {item.description || <span className="text-slate-400 italic">{t('itemDetail.noDescription')}</span>}
                 </p>
               </div>
               {/* Profile Card */}
               <div className="bg-[#F8FAFC] rounded-2xl p-4 mb-5 border border-slate-100">
                 <h3 className="text-sm font-bold text-[#0F172A] mb-3">
-                  {item.status === 'LOST' ? "Yo'qotgan shaxsning profili" : "Topib olgan shaxsning profili"}
+                  {item.status === 'LOST' ? t('itemDetail.lostProfile') : t('itemDetail.foundProfile')}
                 </h3>
                 <div className="flex items-center gap-4 mb-4">
                   <img
@@ -266,7 +268,7 @@ export default function ItemDetail() {
                   />
                   <div>
                     <h4 className="font-bold text-[#0F172A] text-lg">{item.owner_name}</h4>
-                    <p className="text-slate-400 text-sm">{item.location_address || "Manzil noma'lum"}</p>
+                    <p className="text-slate-400 text-sm">{item.location_address || t('itemDetail.unknownLocation')}</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -279,11 +281,11 @@ export default function ItemDetail() {
                     </a>
                   ) : (
                     <div className="flex-1 bg-slate-50 border border-slate-200 text-slate-400 py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 cursor-not-allowed">
-                      <Phone size={18} /> Raqam yo'q
+                      <Phone size={18} /> {t('itemDetail.noPhone')}
                     </div>
                   )}
                   <button className="flex-1 bg-white border border-slate-200 hover:border-[#3B82F6] hover:text-[#3B82F6] text-slate-700 py-2.5 rounded-xl font-semibold transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2">
-                    <MessageCircle size={18} /> Xabar
+                    <MessageCircle size={18} /> {t('itemDetail.message')}
                   </button>
                 </div>
               </div>
@@ -292,7 +294,7 @@ export default function ItemDetail() {
             {/* If there are images, Map goes here. If not, map goes in the other column. */}
             {imageArray.length > 0 && (
               <div>
-                <h3 className="text-sm font-bold text-[#0F172A] mb-3">Manzil</h3>
+                <h3 className="text-sm font-bold text-[#0F172A] mb-3">{t('itemDetail.locationTitle')}</h3>
                 <div className="w-full h-64 bg-slate-100 rounded-2xl overflow-hidden relative border border-slate-200 z-0">
                   {(item.latitude && item.longitude) ? (
                     <MapContainer
@@ -310,7 +312,7 @@ export default function ItemDetail() {
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 bg-slate-50">
                       <MapPin size={40} className="mb-2 opacity-50" />
-                      <p>Xarita ma'lumotlari kiritilmagan</p>
+                      <p>{t('itemDetail.noMapData')}</p>
                     </div>
                   )}
                   {item.location_address && (
@@ -328,7 +330,7 @@ export default function ItemDetail() {
           {imageArray.length === 0 && (
             <div className="w-full order-2 flex flex-col gap-6">
               <div>
-                <h3 className="text-sm font-bold text-[#0F172A] mb-3">Manzil</h3>
+                <h3 className="text-sm font-bold text-[#0F172A] mb-3">{t('itemDetail.locationTitle')}</h3>
                 <div className="w-full h-64 bg-slate-100 rounded-2xl overflow-hidden relative border border-slate-200 z-0">
                   {(item.latitude && item.longitude) ? (
                     <MapContainer
@@ -346,7 +348,7 @@ export default function ItemDetail() {
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 bg-slate-50">
                       <MapPin size={40} className="mb-2 opacity-50" />
-                      <p>Xarita ma'lumotlari kiritilmagan</p>
+                      <p>{t('itemDetail.noMapData')}</p>
                     </div>
                   )}
                   {item.location_address && (

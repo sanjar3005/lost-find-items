@@ -1,15 +1,10 @@
 from rest_framework import serializers
-from .models import Item, ItemImage, Category, Color
+from .models import Item, ItemImage, Category
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ['id', 'name']
-
-class ColorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Color
-        fields = ['id', 'name', 'hex_code']
+        fields = ['id', 'name', 'name_uz', 'name_en', 'name_ru', 'parent']
 
 class ItemImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -23,7 +18,6 @@ class ItemImageSerializer(serializers.ModelSerializer):
 class ItemSerializer(serializers.ModelSerializer):
     images = serializers.SerializerMethodField()
     categories = CategorySerializer(many=True, read_only=True)
-    colors = ColorSerializer(many=True, read_only=True)
     uploaded_images = serializers.ListField(
         child=serializers.ImageField(allow_empty_file=False, use_url=False),
         write_only=True,
@@ -37,13 +31,13 @@ class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         fields = [
-            'id', 'title', 'description', 'category', 'categories', 'colors', 'user', 'owner_name',
+            'id', 'title', 'description', 'category', 'categories', 'user', 'owner_name',
             'date_lost_or_found', 'contact_info', 'latitude', 'longitude',
             'location_address', 'is_resolved', 'status', 'images', 
             'uploaded_images', 'owner_picture', 'is_saved', 'created_at', 'views_count',
-            'ai_labels', 'is_processed' # Add these new fields here
+            'is_processed'
         ]
-        read_only_fields = ['user', 'ai_labels', 'is_processed', 'categories', 'colors']
+        read_only_fields = ['user', 'is_processed', 'categories']
 
     def get_images(self, obj):
         images = obj.images.all()

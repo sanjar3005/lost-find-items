@@ -1,49 +1,52 @@
 import React from "react";
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Footer() {
-    return (
+  const { t } = useLanguage();
+
+  return (
     <footer className="bg-white border-t border-slate-100 pt-12 pb-8">
-        <div className="max-w-85/100 mx-auto px-4 md:px-8">
+      <div className="w-full max-w-7xl mx-auto px-4 md:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
             
             {/* Column 1: Description */}
             <div className="col-span-1 md:col-span-1">
               <p className="text-sm text-slate-500 leading-relaxed max-w-xs">
-                Har qanday yo'qolgan narsangizni topishingiz mumkun!
+                {t('footer.description')}
               </p>
             </div>
 
-            {/* Column 2: Biz haqimizda */}
+            {/* Column 2: About */}
             <div>
-              <h4 className="font-bold text-slate-900 mb-4">Biz haqimizda</h4>
+              <h4 className="font-bold text-slate-900 mb-4">{t('footer.aboutUs')}</h4>
               <ul className="space-y-2 text-sm text-slate-500">
-                <li><a href="#" className="hover:text-blue-600 transition-colors">Haqida</a></li>
-                <li><a href="#" className="hover:text-blue-600 transition-colors">Aloqa</a></li>
+                <li><a href="#" className="hover:text-blue-600 transition-colors">{t('footer.aboutUs')}</a></li>
+                <li><a href="#" className="hover:text-blue-600 transition-colors">{t('footer.contact')}</a></li>
               </ul>
             </div>
 
-            {/* Column 3: Havolalar */}
+            {/* Column 3: Links */}
             <div>
-              <h4 className="font-bold text-slate-900 mb-4">Havolalar</h4>
+              <h4 className="font-bold text-slate-900 mb-4">{t('footer.links')}</h4>
               <ul className="space-y-2 text-sm text-slate-500">
-                <li><a href="#" className="hover:text-blue-600 transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-blue-600 transition-colors">Yordam markazi</a></li>
+                <li><a href="#" className="hover:text-blue-600 transition-colors">{t('footer.blog')}</a></li>
+                <li><a href="#" className="hover:text-blue-600 transition-colors">{t('footer.helpCenter')}</a></li>
               </ul>
             </div>
 
-             {/* Column 4: Hamjamiyat & Socials */}
+             {/* Column 4: Community & Socials */}
              <div>
-              <h4 className="font-bold text-slate-900 mb-4">Hamjamiyat havolalari</h4>
+              <h4 className="font-bold text-slate-900 mb-4">{t('footer.community')}</h4>
               <ul className="space-y-2 text-sm text-slate-500 mb-6">
-                 <li><a href="#" className="hover:text-blue-600 transition-colors">Ixtilof</a></li>
-                 <li><a href="#" className="hover:text-blue-600 transition-colors">Jamiyat</a></li>
+                 <li><a href="#" className="hover:text-blue-600 transition-colors">{t('footer.disputes')}</a></li>
+                 <li><a href="#" className="hover:text-blue-600 transition-colors">{t('footer.community')}</a></li>
               </ul>
             </div>
           </div>
           
            {/* Social Icons Row */}
            <div className="flex flex-col md:flex-row justify-between items-center border-t border-slate-100 pt-8">
-              <h4 className="font-bold text-slate-900 mb-4 md:mb-0 md:mr-auto">Ijtimoiy tarmoq</h4>
+              <h4 className="font-bold text-slate-900 mb-4 md:mb-0 md:mr-auto">{t('footer.socialTitle')}</h4>
               <div className="flex gap-4">
                 {/* Instagram */}
                 <a href="#" className="w-10 h-10 bg-[#88C1F8] rounded-lg flex items-center justify-center text-white hover:bg-blue-500 transition-colors">

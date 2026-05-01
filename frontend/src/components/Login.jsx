@@ -3,6 +3,7 @@ import { Eye, EyeOff, Mail, Key } from 'lucide-react';
 import Footer from './Footer';
 import { useAuth } from '../context/AuthContext'; // Import the useAuth hook
 import { useGoogleLogin } from '@react-oauth/google';
+import { useLanguage } from '../context/LanguageContext';
 // Import your login function
 // If using react-router-dom for navigation
 // import { Link } from 'react-router-dom'; 
@@ -15,6 +16,7 @@ const LoginPage = () => {
   const [error, setError] = useState(null); // For handling login errors
   const [loading, setLoading] = useState(false); // For handling loading state
   const { loginUser, loginWithGoogle } = useAuth();
+  const { t } = useLanguage();
 
   // 3. Initialize the Google Hook
   const handleGoogleClick = useGoogleLogin({
@@ -23,10 +25,10 @@ const LoginPage = () => {
         // Send Google's access token to your backend
         await loginWithGoogle(tokenResponse.access_token);
       } catch (err) {
-        setError("Google orqali kirishda xatolik yuz berdi.");
+        setError(t('auth.googleLoginError'));
       }
     },
-    onError: () => setError("Google tizimiga ulanish bekor qilindi."),
+    onError: () => setError(t('auth.googleLoginCanceled')),
   });
 
   const togglePasswordVisibility = () => {
@@ -73,7 +75,7 @@ const LoginPage = () => {
               className="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 rounded-lg px-4 py-3 text-slate-700 font-medium hover:bg-slate-50 transition-colors shadow-sm"
             >
               <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
-              Google orqali davom etish
+              {t('auth.googleContinue')}
             </button>
           </div>
 
@@ -85,7 +87,7 @@ const LoginPage = () => {
               <div className="w-full border-t border-slate-200"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-slate-500 uppercase">OR</span>
+              <span className="px-4 bg-white text-slate-500 uppercase">{t('common.or')}</span>
             </div>
           </div>
 
@@ -99,7 +101,7 @@ const LoginPage = () => {
               </div>
               <div className="bg-[#F3F4F6] rounded-lg px-4 pt-2 pb-2 pl-12 border border-transparent focus-within:border-blue-500 focus-within:bg-white transition-all">
                 <label htmlFor="email" className="block text-xs font-medium text-slate-500 mb-0.5">
-                  Email
+                  {t('auth.emailLabel')}
                 </label>
                 <input
                   id="email"
@@ -109,7 +111,7 @@ const LoginPage = () => {
                   required
                   onChange={(e) => setEmail(e.target.value)}
                   className="block w-full bg-transparent border-none p-0 text-slate-900 placeholder-slate-400 focus:ring-0 sm:text-sm font-bold"
-                  placeholder="Enter your email"
+                  placeholder={t('auth.emailPlaceholder')}
                 />
               </div>
             </div>
@@ -121,7 +123,7 @@ const LoginPage = () => {
               </div>
               <div className="bg-[#F3F4F6] rounded-lg px-4 pt-2 pb-2 pl-12 pr-10 border border-transparent focus-within:border-blue-500 focus-within:bg-white transition-all">
                 <label htmlFor="password" className="block text-xs font-medium text-slate-500 mb-0.5">
-                  Parol
+                  {t('auth.passwordLabel')}
                 </label>
                 <input
                   id="password"
@@ -131,7 +133,7 @@ const LoginPage = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="block w-full bg-transparent border-none p-0 text-slate-900 placeholder-slate-400 focus:ring-0 sm:text-sm font-bold tracking-widest"
-                  placeholder="Password"
+                  placeholder={t('auth.passwordPlaceholder')}
                 />
               </div>
               <button
@@ -155,13 +157,13 @@ const LoginPage = () => {
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-slate-700">
-                  Eslab qolish
+                  {t('auth.rememberMe')}
                 </label>
               </div>
 
               <div className="text-sm">
                 <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
-                  Parolni unutingizmi?
+                  {t('auth.forgotPassword')}
                 </a>
               </div>
             </div>
@@ -173,16 +175,16 @@ const LoginPage = () => {
                 disabled={loading}
                 className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-[#1E85FF] hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50"
               >
-                {loading ? "Yuklanmoqda..." : "Kirish"}
+                {loading ? t('auth.verifying') : t('auth.loginButton')}
               </button>
             </div>
           </form>
 
           {/* Sign Up Link */}
           <div className="text-center text-sm">
-            <span className="text-slate-600">Hisobingiz yo'qmi? </span>
+            <span className="text-slate-600">{t('auth.noAccount')} </span>
             <a href="/register" className="font-medium text-blue-600 hover:text-blue-500">
-              Royxatdan o’tish
+              {t('auth.registerButton')}
             </a>
           </div>
 
